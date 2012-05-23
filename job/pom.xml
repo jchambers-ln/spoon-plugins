@@ -13,6 +13,7 @@
 	<modules>
 		<module>ecldataset</module>
 		<module>ecldedup</module>
+		<module>ecldespray</module>
 		<module>ecldistribute</module>
 		<module>eclexecute</module>
 		<module>eclgeneric</module>

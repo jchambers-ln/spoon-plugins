@@ -243,8 +243,8 @@ public class ECLDataset extends JobEntryBase implements Cloneable, JobEntryInter
         retval += super.getXML();
         
         retval += "		<logical_file_name>" + logicalFileName + "</logical_file_name>" + Const.CR;
-        retval += "		<record_name>" + recordName + "</record_name>" + Const.CR;
-        retval += "		<dataset_name>" + datasetName + "</dataset_name>" + Const.CR;
+        retval += "		<record_name isDef=\"true\">" + recordName + "</record_name>" + Const.CR;
+        retval += "		<dataset_name isDef=\"true\">" + datasetName + "</dataset_name>" + Const.CR;
         retval += "		<record_def>" + recordDef + "</record_def>" + Const.CR;
         retval += "		<recordSet>" + recordSet + "</recordSet>" + Const.CR;
         retval += "		<recordList>" + this.saveRecordList() + "</recordList>" + Const.CR;
