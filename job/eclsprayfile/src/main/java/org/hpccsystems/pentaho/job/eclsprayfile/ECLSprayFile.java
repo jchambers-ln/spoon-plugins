@@ -28,6 +28,7 @@ import org.w3c.dom.Node;
 
 import org.pentaho.di.job.JobMeta;
 import org.hpccsystems.eclguifeatures.*;
+import org.hpccsystems.ecldirect.*;
 
 /**
  *
@@ -171,6 +172,7 @@ public class ECLSprayFile extends JobEntryBase implements Cloneable, JobEntryInt
         spray.setLogicalFileName(getLogicalFileName());
         spray.setFileType(getFileType());
         spray.setCsvQuote(getCsvQuote());
+       
         spray.setCsvSeparator(getCsvSeparator());
         spray.setCsvTerminator(getCsvTerminator());
         spray.setRecordSize(getFixedRecordSize());
