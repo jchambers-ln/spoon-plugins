@@ -1,4 +1,4 @@
-package org.hpccsystems.pentaho.steps.eclexecute;
+package org.hpccsystems.pentaho.steps.ecldedup;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -7,7 +7,6 @@ import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
@@ -20,10 +19,6 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -34,8 +29,6 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 
-import org.hpccsystems.ecldirect.Column;
-import org.hpccsystems.eclguifeatures.AutoPopulateSteps;
 import org.hpccsystems.eclguifeatures.CreateTable;
 import org.hpccsystems.eclguifeatures.RecordBO;
 import org.hpccsystems.eclguifeatures.RecordList;
@@ -47,28 +40,36 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.graphics.Color;
 
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
+import org.hpccsystems.eclguifeatures.AutoPopulateSteps;
 
-public class ECLExecuteStepDialog extends BaseStepDialog implements StepDialogInterface {
+public class ECLDedupStepDialog extends BaseStepDialog implements StepDialogInterface {
 
-	private ECLExecuteStepMeta input;
+	private ECLDedupStepMeta input;
     private HashMap controls = new HashMap();
     
-    private Text fileName;
-    
     private Text stepnameField;
-    private Button fileOpenButton;
+    
+    private Text recordsetName;
+    private Combo recordset;
+    private Text condition;
+    private Combo runLocal;//optional
+
+    private Combo isAll;
+    private Combo isHash;
+    private Text keep;
+    private Text keeper;
+    
+    private Button wOK, wCancel;
+    private boolean backupChanged;
+    private SelectionAdapter lsDef;
+
    
-    public ECLExecuteStepDialog(Shell parent, Object in, TransMeta transMeta, String stepName) {
+    public ECLDedupStepDialog(Shell parent, Object in, TransMeta transMeta, String stepName) {
         super(parent, (BaseStepMeta) in, transMeta, stepName);
-        input = (ECLExecuteStepMeta) in;
-<<<<<<< HEAD
-=======
+        input = (ECLDedupStepMeta) in;
         if(stepName != null && !stepName.equals("")){
         	input.setStepName(stepName);
         }
->>>>>>> master
     }
 
     public String open() {
@@ -81,17 +82,25 @@ public class ECLExecuteStepDialog extends BaseStepDialog implements StepDialogIn
         props.setLook(shell);
         setShellImage(shell, input);
 
-        
-      
-                
-
         ModifyListener lsMod = new ModifyListener() {
 
             public void modifyText(ModifyEvent e) {
                 input.setChanged();
             }
         };
-
+        
+        String datasets[] = null;
+        AutoPopulateSteps ap = new AutoPopulateSteps();
+        try{
+            //Object[] jec = this.jobMeta.getJobCopies().toArray();
+            
+            datasets = ap.parseDatasets(this.transMeta.getSteps());
+        }catch (Exception e){
+            System.out.println("Error Parsing existing Datasets");
+            System.out.println(e.toString());
+            datasets = new String[]{""};
+        }
+        
         backupChanged = input.hasChanged();
 
         FormLayout formLayout = new FormLayout();
@@ -123,45 +132,37 @@ public class ECLExecuteStepDialog extends BaseStepDialog implements StepDialogIn
         
         stepnameField = buildText("Step Name", null, lsMod, middle, margin, generalGroup);
 
-        
-
         //All other contols
-     //Output Declaration
-     Group fileGroup = new Group(shell, SWT.SHADOW_NONE);
-     props.setLook(fileGroup);
-     fileGroup.setText("Configuration Details");
-     fileGroup.setLayout(groupLayout);
-     FormData fileGroupFormat = new FormData();
-     fileGroupFormat.top = new FormAttachment(generalGroup, margin);
-     fileGroupFormat.width = 400;
-     fileGroupFormat.height = 100;
-     fileGroupFormat.left = new FormAttachment(middle, 0);
-     fileGroup.setLayoutData(fileGroupFormat);
-     
-     
-     //this.serverAddress = buildText("Server Address", fileGroup, lsMod, middle, margin, fileGroup);
-     //controls.put("serverAddress", serverAddress);
-     
-     this.fileName = buildText("Output File(s) Directory", fileGroup, lsMod, middle, margin, fileGroup);
-     controls.put("fileName", fileName);
-     
-     this.fileOpenButton = buildButton("Choose Location", fileName, lsMod, middle, margin, fileGroup);
-     controls.put("fOpen", fileOpenButton);
-     
-     Listener fileOpenListener = new Listener() {
+        //Distribute Declaration
+        Group iterateGroup = new Group(shell, SWT.SHADOW_NONE);
+        props.setLook(iterateGroup);
+        iterateGroup.setText("Dedup Details");
+        iterateGroup.setLayout(groupLayout);
+        FormData datasetGroupFormat = new FormData();
+        datasetGroupFormat.top = new FormAttachment(generalGroup, margin);
+        datasetGroupFormat.width = 400;
+        datasetGroupFormat.height = 225;
+        datasetGroupFormat.left = new FormAttachment(middle, 0);
+        iterateGroup.setLayoutData(datasetGroupFormat);
 
-         public void handleEvent(Event e) {
-             String newFile = buildFileDialog();
-             if(newFile != ""){
-                 fileName.setText(newFile);
-             }
-         }
-     };
-     this.fileOpenButton.addListener(SWT.Selection, fileOpenListener);
-     
-     
+        //name = buildText("Distribute Name", null, lsMod, middle, margin, distributeGroup);
 
+        recordsetName = buildText("Result Recordset", null, lsMod, middle, margin, iterateGroup);
+        recordset = buildCombo("Recordset", recordsetName, lsMod, middle, margin, iterateGroup,datasets);
+        condition = buildText("Condtion", recordset, lsMod, middle, margin, iterateGroup);
         
+	    /*private Text isAll;
+	    private Text isHash;
+	    private Text keep;
+	    private Text keeper;
+	     */   
+        isAll = buildCombo("All", condition, lsMod, middle, margin, iterateGroup,new String[]{"false", "true"});
+        isHash = buildCombo("Hash", isAll, lsMod, middle, margin, iterateGroup,new String[]{"false", "true"});
+        keep = buildText("Keep", isHash, lsMod, middle, margin, iterateGroup);
+        keeper = buildText("Keeper", keep, lsMod, middle, margin, iterateGroup);
+       
+        
+        runLocal = buildCombo("RUNLOCAL", keeper, lsMod, middle, margin, iterateGroup,new String[]{"false", "true"});
         
         
         wOK = new Button(shell, SWT.PUSH);
@@ -169,7 +170,7 @@ public class ECLExecuteStepDialog extends BaseStepDialog implements StepDialogIn
         wCancel = new Button(shell, SWT.PUSH);
         wCancel.setText("Cancel");
 
-        BaseStepDialog.positionBottomButtons(shell, new Button[]{wOK, wCancel}, margin, fileGroup);
+        BaseStepDialog.positionBottomButtons(shell, new Button[]{wOK, wCancel}, margin, iterateGroup);
 
         // Add listeners
         Listener cancelListener = new Listener() {
@@ -181,9 +182,13 @@ public class ECLExecuteStepDialog extends BaseStepDialog implements StepDialogIn
         Listener okListener = new Listener() {
 
             public void handleEvent(Event e) {
-
-            	ok();
-
+            	//updatePaths();
+            	//boolean isReady = verifySettings();
+            	//if(isReady){
+            		ok();
+            	//}else{
+            		
+            	//}
             }
         };
 
@@ -210,16 +215,35 @@ public class ECLExecuteStepDialog extends BaseStepDialog implements StepDialogIn
         if (input.getStepName() != null && !input.getStepName().equals("")) {
         	stepnameField.setText(input.getStepName());
         }else{
-        	stepnameField.setText("Execute");
+        	stepnameField.setText("Global Variables");
         }
         //add other set functions here
-        if (input.getFileName() != null) {
-            this.fileName.setText(input.getFileName());
+        if (input.getRecordsetName() != null) {
+            recordsetName.setText(input.getRecordsetName());
         }
-
+        if (input.getRecordset() != null) {
+            recordset.setText(input.getRecordset());
+        }
+        if (input.getCondition() != null) {
+            condition.setText(input.getCondition());
+        }
+        if (input.getIsAllString() != null) {
+            isAll.setText(input.getIsAllString());
+        }
+        if (input.getIsHashString() != null) {
+            isHash.setText(input.getIsHashString());
+        }
+        if (input.getKeep() != null) {
+            keep.setText(input.getKeep());
+        }
+       
+        if (input.getKeeper() != null) {
+            keeper.setText(input.getKeeper());
+        }
+        if (input.getRunLocalString() != null) {
+            runLocal.setText(input.getRunLocalString());
+        }
         
-        
-
         shell.pack();
         shell.open();
         while (!shell.isDisposed()) {
@@ -245,29 +269,18 @@ public class ECLExecuteStepDialog extends BaseStepDialog implements StepDialogIn
     private void ok() {
     	//input.setName(jobEntryName.getText());
     	input.setStepName(stepnameField.getText());
-<<<<<<< HEAD
-=======
     	super.stepname = stepnameField.getText();
->>>>>>> master
+    	
     	//add other here
-    	AutoPopulateSteps ap = new AutoPopulateSteps();
-        String serverHost = "";
-        String serverPort = "";
-            try{
-            //Object[] jec = this.jobMeta.getJobCopies().toArray();
-                
-                serverHost = ap.getGlobalVariable(this.transMeta.getSteps(),"server_ip");
-                serverPort = ap.getGlobalVariable(this.transMeta.getSteps(),"server_port");
-            }catch (Exception e){
-                System.out.println("Error Parsing existing Global Variables ");
-                System.out.println(e.toString());
-                
-            }
-            
-        input.setServerAddress(serverHost);
-        input.setServerPort(serverPort);
-        
-        input.setFileName(this.fileName.getText());
+    	input.setRecordsetName(recordsetName.getText());
+    	input.setRecordset(recordset.getText());
+    	input.setCondition(condition.getText());
+    	input.setIsAllString(isAll.getText());
+    	input.setIsHashString(isHash.getText());
+    	input.setKeep(keep.getText());
+    	input.setKeeper(keeper.getText());
+    	input.setRunLocalString(runLocal.getText());
+    	
         dispose();
     	
     }
@@ -349,118 +362,4 @@ public class ECLExecuteStepDialog extends BaseStepDialog implements StepDialogIn
 
         return combo;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    private Button buildButton(String strLabel, Control prevControl, 
-            ModifyListener isMod, int middle, int margin, Composite groupBox){
-       
-           Button nButton = new Button(groupBox, SWT.PUSH | SWT.SINGLE | SWT.CENTER);
-           nButton.setText(strLabel);
-           props.setLook(nButton);
-           //nButton.addModifyListener(lsMod)
-           FormData fieldFormat = new FormData();
-           fieldFormat.left = new FormAttachment(middle, 0);
-           fieldFormat.top = new FormAttachment(prevControl, margin);
-           fieldFormat.right = new FormAttachment(75, 0);
-           fieldFormat.height = 25;
-           nButton.setLayoutData(fieldFormat);
-       
-           return nButton;
-           
-          
-   }
-   private String buildFileDialog() {
-       
-       DirectoryDialog dialog = new DirectoryDialog(shell);
-       dialog.setFilterPath("c:\\"); // Windows specific
-       //System.out.println("RESULT=" + dialog.open());
-       String selected = dialog.open();
-       if(selected == null){
-           selected = "";
-       }
-       return selected;
-       /*
-       //file field
-           FileDialog fd = new FileDialog(shell, SWT.SAVE);
-
-           fd.setText("Save");
-           fd.setFilterPath("C:/");
-           String[] filterExt = { "*.csv", ".xml", "*.txt", "*.*" };
-           //fd.setFilterExtensions(filterExt);
-           String selected = fd.open();
-           if(fd.getFileName() != ""){
-               return fd.getFilterPath() + System.getProperty("file.separator") + fd.getFileName();
-           }else{
-               return "";
-           }
-        * */
-
-           
-       }
-    
-    
-    
-    
-
-    public void createOutputFile(ArrayList dsList,String fileName, int count){
-         String outStr = "";
-         String header = "";
-         if(dsList != null){
-         String newline = System.getProperty("line.separator");
-         
-                        for (int iList = 0; iList < dsList.size(); iList++) {
-                            //logBasic("----------Outer-------------");
-                            ArrayList rowList = (ArrayList) dsList.get(iList);
-
-                            for (int jRow = 0; jRow < rowList.size(); jRow++) {
-                                //logBasic("----------Row-------------");
-                                ArrayList columnList = (ArrayList) rowList.get(jRow);
-
-                                for (int lCol = 0; lCol < columnList.size(); lCol++) {
-                                 //   logBasic("----------Column-------------");
-                                    Column column = (Column) columnList.get(lCol);
-                                    logBasic(column.getName() + "=" + column.getValue() + "|");
-                                    outStr += column.getValue();
-                                    if(lCol< (columnList.size()-1)){
-                                        outStr += ",";
-                                    }
-                                    if(jRow == 0){
-                                        header += column.getName();
-                                        if(lCol< (columnList.size()-1)){
-                                            header += ",";
-                                        }else{
-                                            header += newline;
-                                        }
-                                    }
-                                }
-                                logBasic("newline");
-                                outStr += newline;
-                            }
-                        }
-             try {
-                
-                BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
-                System.getProperties().getProperty("fileName");
-                System.setProperty("fileName"+count, fileName);
-                
-                out.write(header+outStr);
-                out.close();
-           
-            } catch (IOException e) {
-               logError("Failed to write file: " + fileName); 
-               //result.setResult(false);
-                e.printStackTrace();
-            }  
-         }
-    }
-
 }
