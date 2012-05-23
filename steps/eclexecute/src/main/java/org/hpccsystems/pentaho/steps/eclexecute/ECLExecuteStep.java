@@ -37,6 +37,37 @@ public class ECLExecuteStep extends BaseStep implements StepInterface {
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
     	meta = (ECLExecuteStepMeta) smi;
         data = (ECLExecuteStepData) sdi;
+<<<<<<< HEAD
+        /*
+        AutoPopulateSteps ap2 = new AutoPopulateSteps();
+        System.out.println("______________________________________________________==");
+        try{
+        //Object[] jec = this.jobMeta.getJobCopies().toArray();
+        	//this.getTrans().getSteps();
+        	//this.getTrans().getTransMeta().getSteps()
+        	
+           System.out.println("SERVER_IP: " + ap2.getGlobalVariable(this.getTrans().getTransMeta().getSteps(),"server_ip"));
+           System.out.println("SERVER_PORT: " + ap2.getGlobalVariable(this.getTrans().getTransMeta().getSteps(),"server_port"));
+
+           System.out.println("CLUSTER: " + ap2.getGlobalVariable(this.getTrans().getTransMeta().getSteps(),"cluster"));
+           System.out.println("jobName: " + ap2.getGlobalVariable(this.getTrans().getTransMeta().getSteps(),"jobName"));
+
+           System.out.println("ECLCCINSTALLDIR: " + ap2.getGlobalVariable(this.getTrans().getTransMeta().getSteps(),"eclccInstallDir"));
+           System.out.println("mlPath: " + ap2.getGlobalVariable(this.getTrans().getTransMeta().getSteps(),"mlPath"));
+           System.out.println("includeML: " + ap2.getGlobalVariable(this.getTrans().getTransMeta().getSteps(),"includeML"));
+           
+            
+           
+
+        }catch (Exception e){
+            System.out.println("Error Parsing existing Global Variables ");
+            System.out.println(e.toString());
+            e.printStackTrace();
+
+        }
+        System.out.println("==______________________________________________________==");
+        */
+=======
         
         
         Object[] row = getRow(); 
@@ -51,6 +82,7 @@ public class ECLExecuteStep extends BaseStep implements StepInterface {
 
         String eclCode = input;
         
+>>>>>>> master
         //Result result = prevResult;
         if(false){//result.isStopped()){
             logBasic("{Output Job is Stopped}");
@@ -126,7 +158,11 @@ public class ECLExecuteStep extends BaseStep implements StepInterface {
 
            // List list = result.getRows();
           //  list.add(data);
+<<<<<<< HEAD
+            String eclCode = "";
+=======
             //String eclCode = "";
+>>>>>>> master
            // if (list == null) {
             List list = new ArrayList();
           /*  } else {
@@ -375,8 +411,12 @@ public class ECLExecuteStep extends BaseStep implements StepInterface {
     public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
         meta = (ECLExecuteStepMeta) smi;
         data = (ECLExecuteStepData) sdi;
+<<<<<<< HEAD
+
+=======
         super.setStepname(meta.getStepName()); 
         
+>>>>>>> master
         return super.init(smi, sdi);
     }
 
