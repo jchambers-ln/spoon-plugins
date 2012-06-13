@@ -87,8 +87,6 @@ public class ECLDatasetDialog extends JobEntryDialog implements JobEntryDialogIn
 
         shell = new Shell(parentShell, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MIN | SWT.MAX);
         ct = new CreateTable(shell);
-       
-        
         
         TabFolder tabFolder = new TabFolder (shell, SWT.FILL | SWT.RESIZE | SWT.MIN | SWT.MAX);
         FormData data = new FormData();
@@ -98,11 +96,9 @@ public class ECLDatasetDialog extends JobEntryDialog implements JobEntryDialogIn
         tabFolder.setLayoutData(data);
         
         Composite compForGrp = new Composite(tabFolder, SWT.NONE);
-	//compForGrp.setLayout(new FillLayout(SWT.VERTICAL));
+        //compForGrp.setLayout(new FillLayout(SWT.VERTICAL));
         compForGrp.setBackground(new Color(tabFolder.getDisplay(),255,255,255));
         compForGrp.setLayout(new FormLayout());
-                
-                
         
         TabItem item1 = new TabItem(tabFolder, SWT.NULL);
         
@@ -122,7 +118,6 @@ public class ECLDatasetDialog extends JobEntryDialog implements JobEntryDialogIn
         FormLayout formLayout = new FormLayout();
         formLayout.marginWidth = Const.FORM_MARGIN;
         formLayout.marginHeight = Const.FORM_MARGIN;
-
 
         int middle = props.getMiddlePct();
         int margin = Const.MARGIN;

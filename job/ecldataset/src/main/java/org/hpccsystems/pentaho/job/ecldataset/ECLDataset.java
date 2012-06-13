@@ -105,8 +105,8 @@ public class ECLDataset extends JobEntryBase implements Cloneable, JobEntryInter
                     System.out.println("Size: "+recordList.getRecords().size());
                     for (Iterator<RecordBO> iterator = recordList.getRecords().iterator(); iterator.hasNext();) {
                             RecordBO record = (RecordBO) iterator.next();
-                            int rLen = record.getColumnWidth();
-                            if(rLen != 0){
+                        	String rLen = record.getColumnWidth();
+        					if (rLen != null && rLen.trim().length() >0) {
                                 if(record.getColumnName() != null && !record.getColumnName().equals("")){
                                     out += record.getColumnType()+rLen + " " + record.getColumnName();
                                     if(record.getDefaultValue() != ""){
