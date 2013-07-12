@@ -60,5 +60,5 @@ NOTE: If so desired you may incorporate the Maven settings into your
 settings.xml file on the command line.
 
 NOTE: In order to use the SALT features you must obtain a commercial license of SALT, and 
-install SALT on your system please visit hpccsystems.com for more details.  Without SALT installed
-the SALT features will fail to work.
+install SALT on your system please visit hpccsystems.com for more details.  Without SALT 
+installed the SALT features will fail to work.
