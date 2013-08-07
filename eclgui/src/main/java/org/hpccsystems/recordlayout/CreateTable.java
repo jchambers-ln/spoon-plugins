@@ -83,11 +83,25 @@ public class CreateTable {
 
 	// Set column names
 	private String[] columnNames = new String[] { NAME_COLUMN, DEFAULT_VALUE, TYPE_COLUMN, WIDTH_COLUMN };
+	
+	private RecordList parentFields = null;
+	
+	private boolean includeCopyParent = false;
 
+	public void setParentLayout(RecordList fields){
+		parentFields = fields;
+	}
 	public void setColumnNames(String[] columnNames) {
 		this.columnNames = columnNames;
 	}
+	
 
+	public boolean isIncludeCopyParent() {
+		return includeCopyParent;
+	}
+	public void setIncludeCopyParent(boolean includeCopyParent) {
+		this.includeCopyParent = includeCopyParent;
+	}
 	public TabItem buildDefTab(String tabName, TabFolder tabFolder) {
 		this.tabFolder = tabFolder;
 		TabItem tabItem = new TabItem(tabFolder, SWT.NULL);
@@ -207,6 +221,7 @@ public class CreateTable {
 		//    table.getColumns()[0].dispose();
 		//}
 		
+		
 		//this.renderTable();
 		RecordList oldRL = recordList;
 		recordList = new RecordList();
@@ -221,7 +236,7 @@ public class CreateTable {
                 }
                 oldRL = null;
 		tableViewer.setInput(recordList);
-		table.setRedraw(true);
+		//table.setRedraw(true);
                
                 //tableViewer.refresh();
 	}
@@ -557,14 +572,34 @@ public class CreateTable {
 		});
 		
 		// Create and configure the "GetAll" button
+		if(includeCopyParent){
 		Button getAll = new Button(parent, SWT.PUSH | SWT.CENTER);
-		getAll.setText("Get All");
+		getAll.setText("Copy Parent Format");
 		gridData = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-		gridData.widthHint = 80;
+		gridData.widthHint = 180;
 		getAll.setLayoutData(gridData);
 		getAll.addSelectionListener(new SelectionAdapter() {
 			// Remove the selection and refresh the view
 			public void widgetSelected(SelectionEvent e) {
+				if(parentFields!=null && parentFields.getRecords().size()>0){
+					
+					//tableViewer.remove(index)tableViewer.remove(index);
+					//tableViewer.getTable().getSize();
+					recordList = new RecordList();
+	                
+	                if(parentFields.getRecords() != null && parentFields.getRecords().size() > 0) {
+	                        //System.out.println("Size: "+parentFields.getRecords().size());
+	                        for (Iterator<RecordBO> iterator = parentFields.getRecords().iterator(); iterator.hasNext();) {
+	                                //System.out.println("Record -- ");
+	                                RecordBO obj = (RecordBO) iterator.next();
+	                                recordList.addRecordBO(obj);
+
+	                        }
+	                }
+	               
+	                redrawTable(true);
+				}
+				/*
 				if(recordList.getRecords() != null && recordList.getRecords().size() > 0) {
 					System.out.println("Size: "+recordList.getRecords().size());
 					for (Iterator<RecordBO> iterator = recordList.getRecords().iterator(); iterator.hasNext();) {
@@ -576,11 +611,11 @@ public class CreateTable {
 						System.out.println("*******************");
 						
 					}
-				}
+				}*/
 				
 			}
 		});
-		
+		}
 		//Create and configure the "Move Up" button
 		Button btnRowUp = new Button(parent, SWT.PUSH | SWT.CENTER);
 		btnRowUp.setImage(RecordLabels.getImage("upArrow"));
