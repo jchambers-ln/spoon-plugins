@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="ECLProject"
+	iconfile="project.png"
+	description="Project"
+	tooltip="Project" 
+	category="HPCC Systems"
+	classname="org.hpccsystems.pentaho.job.eclproject.ECLProject">
+            
+    <libraries>
+	  <library name="../../hpcc-common/javaecl-0.1.0.jar"/>
+        <library name="../../hpcc-common/eclgui.jar"/>
+        <library name="eclproject.jar"/>
+    </libraries>            
+</plugin>
