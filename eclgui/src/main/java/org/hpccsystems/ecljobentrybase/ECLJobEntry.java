@@ -229,75 +229,85 @@ return null;
     public Result waitForAllPaths(Result result){
     	//TODO::: needs to handle unconditional outbound path even if that means throwing an error.
     	Result newResult = new Result();
-    	
-    	JobMeta jobMeta = super.parentJob.getJobMeta();
-      	List<JobEntryCopy> jobs = jobMeta.getJobCopies();
-      	int numInbound = jobMeta.findNrPrevJobEntries(jobMeta.findJobEntry(this.getName()));
-      	if(numInbound>1){
-	      	//numTimesExecuted++;
-	      	if(ECLJobEntry.timesExecutedMap.containsKey(this.getName())){
-	      		//timesExecutedMap.put(key, value) timesExecutedMap.get(this.getName())
-	      		ECLJobEntry.timesExecutedMap.put(this.getName(), ECLJobEntry.timesExecutedMap.get(this.getName())+1);
-	      	}else{
-	      		ECLJobEntry.timesExecutedMap.put(this.getName(), 1);
+    	if(result != null){
+	    	
+	    	JobMeta jobMeta = super.parentJob.getJobMeta();
+	      	List<JobEntryCopy> jobs = jobMeta.getJobCopies();
+	      	int numInbound =0;
+	      	try{
+		      	if(jobMeta != null){
+		      		numInbound = jobMeta.findNrPrevJobEntries(jobMeta.findJobEntry(this.getName()));
+		      	}
+	      	}catch(Exception e){
+	      		System.out.println(e);
 	      	}
 	      	
-	      	//add is waiting to the map for tracking purposes.
-	      	if(!ECLJobEntry.isWaitingMap.containsKey(this.getName())){
-	      		//timesExecutedMap.put(key, value) timesExecutedMap.get(this.getName())
-	      		ECLJobEntry.isWaitingMap.put(this.getName(), true);
-	      	}
+	      	if(numInbound>1){
+		      	//numTimesExecuted++;
+		      	if(ECLJobEntry.timesExecutedMap.containsKey(this.getName())){
+		      		//timesExecutedMap.put(key, value) timesExecutedMap.get(this.getName())
+		      		ECLJobEntry.timesExecutedMap.put(this.getName(), ECLJobEntry.timesExecutedMap.get(this.getName())+1);
+		      	}else{
+		      		ECLJobEntry.timesExecutedMap.put(this.getName(), 1);
+		      	}
+		      	
+		      	//add is waiting to the map for tracking purposes.
+		      	if(!ECLJobEntry.isWaitingMap.containsKey(this.getName())){
+		      		//timesExecutedMap.put(key, value) timesExecutedMap.get(this.getName())
+		      		ECLJobEntry.isWaitingMap.put(this.getName(), true);
+		      	}
+		      	
+		      	System.out.println("{ECLJOBENTRY} " + this.getName() + " - numInbound: " + numInbound);
+		      	System.out.println("{ECLJOBENTRY} " + this.getName() + " - TimesExecuted: " + ECLJobEntry.timesExecutedMap.get(this.getName()));
+		      	
 	      	
-	      	System.out.println("{ECLJOBENTRY} " + this.getName() + " - numInbound: " + numInbound);
-	      	System.out.println("{ECLJOBENTRY} " + this.getName() + " - TimesExecuted: " + ECLJobEntry.timesExecutedMap.get(this.getName()));
-	      	
-      	
-      		RowMetaAndData data = new RowMetaAndData();
-            List list = result.getRows();
-            
-            if(!ECLJobEntry.globalResultMap.containsKey(this.getName())){
-            	ECLJobEntry.globalResultMap.put(this.getName(), new Result());
-            }
-            List listGlobal = ECLJobEntry.globalResultMap.get(this.getName()).getRows();
-            listGlobal.addAll(list);
-            result.setRows(listGlobal);
-            
-	      	int numberOfPathsRemaining = numInbound-ECLJobEntry.timesExecutedMap.get(this.getName());
-	      	System.out.println("{ECLJOBENTRY} " + this.getName() + " - numberOfPathsRemaining: " + numberOfPathsRemaining);
-	        if(numberOfPathsRemaining != 0){
-	        	result.setStopped(true);
-	        	System.out.println("~waiting");
-	        	ECLJobEntry.validMap.put(this.getName(), false);
-	        	//globalResult = result;
-	        	ECLJobEntry.globalResultMap.put(this.getName(),result);
-	            int count = 0;
-	            //while(ECLJobEntry.isWaitingMap.get(this.getName())){
-	            while(count < 10000){
-	                //add a delay for non primary path.
-	                count++;
-	            }
-	            newResult = ECLJobEntry.globalResultMap.get(this.getName());
-	            System.setProperty("multiPath", "true");
-	        }else{
-	        	//isValid = true;
-	        	result.setStopped(false);
-	            result.setResult(true);
-	            ECLJobEntry.globalResultMap.put(this.getName(),result);
+	      		RowMetaAndData data = new RowMetaAndData();
+	            List list = result.getRows();
 	            
-	            ECLJobEntry.validMap.put(this.getName(), true);
-	        	System.out.println("~notwaiting");
-	            result.setStopped(false);
-	            System.setProperty("multiPath", "false");
-	            newResult = ECLJobEntry.globalResultMap.get(this.getName());
-	            ECLJobEntry.isWaitingMap.put(this.getName(), false);
-	            blankTrackingMaps();
-	        }
-	       
-	        
-	        
-	    }else{
-	    	newResult = result;
-	    }
+	            if(!ECLJobEntry.globalResultMap.containsKey(this.getName())){
+	            	ECLJobEntry.globalResultMap.put(this.getName(), new Result());
+	            }
+	            List listGlobal = ECLJobEntry.globalResultMap.get(this.getName()).getRows();
+	            listGlobal.addAll(list);
+	            result.setRows(listGlobal);
+	            
+		      	int numberOfPathsRemaining = numInbound-ECLJobEntry.timesExecutedMap.get(this.getName());
+		      	System.out.println("{ECLJOBENTRY} " + this.getName() + " - numberOfPathsRemaining: " + numberOfPathsRemaining);
+		        if(numberOfPathsRemaining != 0){
+		        	result.setStopped(true);
+		        	System.out.println("~waiting");
+		        	ECLJobEntry.validMap.put(this.getName(), false);
+		        	//globalResult = result;
+		        	ECLJobEntry.globalResultMap.put(this.getName(),result);
+		            int count = 0;
+		            //while(ECLJobEntry.isWaitingMap.get(this.getName())){
+		            while(count < 10000){
+		                //add a delay for non primary path.
+		                count++;
+		            }
+		            newResult = ECLJobEntry.globalResultMap.get(this.getName());
+		            System.setProperty("multiPath", "true");
+		        }else{
+		        	//isValid = true;
+		        	result.setStopped(false);
+		            result.setResult(true);
+		            ECLJobEntry.globalResultMap.put(this.getName(),result);
+		            
+		            ECLJobEntry.validMap.put(this.getName(), true);
+		        	System.out.println("~notwaiting");
+		            result.setStopped(false);
+		            System.setProperty("multiPath", "false");
+		            newResult = ECLJobEntry.globalResultMap.get(this.getName());
+		            ECLJobEntry.isWaitingMap.put(this.getName(), false);
+		            blankTrackingMaps();
+		        }
+		       
+		        
+		        
+		    }else{
+		    	newResult = result;
+		    }
+    	}
         return newResult;
     }
     
