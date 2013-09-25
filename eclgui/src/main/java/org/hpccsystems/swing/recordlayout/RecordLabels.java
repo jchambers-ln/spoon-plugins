@@ -1,4 +1,4 @@
-package org.hpccsystems.recordlayout;
+package org.hpccsystems.swing.recordlayout;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -7,14 +7,6 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
 public class RecordLabels extends LabelProvider implements ITableLabelProvider{
-	
-	private String layoutType = "";
-	public RecordLabels(){
-		layoutType = "datasetLayout";
-	}
-	public RecordLabels(String type){
-		layoutType = type;
-	}
 	
 	// Names of images used. This are the actually file names
 	public static final String CHECKED_IMAGE = "checked";
@@ -37,7 +29,6 @@ public class RecordLabels extends LabelProvider implements ITableLabelProvider{
 		return imageRegistry.get(key);
 	}
 	
-	
 	public String getColumnText(Object element, int columnIndex) {
 		String result = "";
 		RecordBO objRecord = (RecordBO) element;
@@ -46,11 +37,7 @@ public class RecordLabels extends LabelProvider implements ITableLabelProvider{
 			result = objRecord.getColumnName();
 			break;
 		case 1: 
-			if(layoutType.equals("sortLayout")){
-				result = objRecord.getSortOrder();
-			}else{
-				result = objRecord.getDefaultValue();
-			}
+			result = objRecord.getDefaultValue();
 			break;
 		case 2:
 			result = objRecord.getColumnType();

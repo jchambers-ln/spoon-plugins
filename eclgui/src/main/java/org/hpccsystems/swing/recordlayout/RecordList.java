@@ -1,4 +1,4 @@
-package org.hpccsystems.recordlayout;
+package org.hpccsystems.swing.recordlayout;
 
 import java.util.ArrayList;
 import java.util.HashSet;

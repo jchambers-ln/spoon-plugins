@@ -27,7 +27,7 @@ public class SortColumnTable {
 	private TableViewer tableViewer;
 	
 	// Set column names
-	private String[] columnNames = new String[] { Constants.TABLE_HEADER_CHILDREN, Constants.TABLE_HEADER_NON_NULL};
+	private String[] columnNames = new String[] { Constants.TABLE_HEADER_SORT_COLUMN, Constants.TABLE_HEADER_DESCENDING};
 	
 	private SortColumnRecordList sortColumnList = null;
 	
@@ -101,11 +101,11 @@ public class SortColumnTable {
 		table.setHeaderVisible(true);
 		
 		TableColumn item = new TableColumn(table, SWT.LEFT, 0);
-		item.setText(Constants.TABLE_HEADER_CHILDREN);
+		item.setText(Constants.TABLE_HEADER_SORT_COLUMN);
 		item.setWidth(200);
 		
 		item = new TableColumn(table, SWT.LEFT, 1);
-		item.setText(Constants.TABLE_HEADER_NON_NULL);
+		item.setText(Constants.TABLE_HEADER_DESCENDING);
 		item.setWidth(100);
 		
 	}

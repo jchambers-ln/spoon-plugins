@@ -1,4 +1,4 @@
-package org.hpccsystems.recordlayout;
+package org.hpccsystems.swing.recordlayout;
 
 public class RecordBO {
 	
@@ -61,12 +61,7 @@ public class RecordBO {
 		this.sortOrder = sortOrder;
 	}
 		public String toCSV(){
-			String out = "";
-            out += columnName + "," + columnType + "," + columnWidth + "," + defaultValue;
-            if(!sortOrder.equals("")){
-            	out += ","+sortOrder;
-            }
-            return out;
+            return columnName + "," + columnType + "," + columnWidth + "," + defaultValue;
         }
         public void fromCSV(String in){
             String[] strArr = in.split("[,]");//"\\,"

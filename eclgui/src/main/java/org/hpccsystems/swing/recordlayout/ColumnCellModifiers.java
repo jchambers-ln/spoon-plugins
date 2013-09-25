@@ -1,4 +1,4 @@
-package org.hpccsystems.recordlayout;
+package org.hpccsystems.swing.recordlayout;
 
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.swt.widgets.TableItem;
@@ -46,7 +46,7 @@ public class ColumnCellModifiers implements ICellModifier{
 			result = record.getColumnWidth();
 		}else
 		if(property.equalsIgnoreCase(CreateTable.SORT_ORDER)){
-			System.out.println("getValue of SORT_ORDER - " + property);
+			
 			String stringValue = record.getSortOrder();
 			String[] choices = createTableObject.getChoices(property);
 			int i = choices.length - 1;
@@ -112,9 +112,7 @@ public class ColumnCellModifiers implements ICellModifier{
 		}else
 		if(property.equalsIgnoreCase(CreateTable.SORT_ORDER)){
 			//result = 1;
-			
 			valueString = createTableObject.getChoices(property)[((Integer) value).intValue()].trim();
-			System.out.println("----" + valueString);
 			if (!record.getColumnType().equals(valueString)) {
 				record.setSortOrder(valueString);
 			}

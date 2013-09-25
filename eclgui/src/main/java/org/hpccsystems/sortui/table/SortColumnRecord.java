@@ -4,7 +4,7 @@ public class SortColumnRecord {
 	private String delim = "*";
 	private String children;
 	
-	private boolean nonNull;
+	private String direction;
 	
 	private boolean select;
 	
@@ -18,12 +18,12 @@ public class SortColumnRecord {
 		this.children = children;
 	}
 
-	public boolean isNonNull() {
-		return nonNull;
+	public String getDirection() {
+		return direction;
 	}
 
-	public void setNonNull(boolean nonNull) {
-		this.nonNull = nonNull;
+	public void setDirection(String direction) {
+		this.direction = direction;
 	}
 
 	public boolean isSelect() {
@@ -47,11 +47,7 @@ public class SortColumnRecord {
 		
 		out += children;
 		out += delim;
-		if(nonNull){
-			out += "nonNull";
-		}else{
-			out += "allowNull";
-		}
+		out += direction;
 		out += delim;
 		if(select){
 			out += "selected";
@@ -72,11 +68,8 @@ public class SortColumnRecord {
 				select = false;
 			}
 			//System.out.println("sel: " + select);
-			if(tokens[1].equalsIgnoreCase("nonNull")){
-				nonNull = true;
-			}else{
-				nonNull = false;
-			}
+			direction = tokens[1];
+			
 			//System.out.println("nonNull: " + nonNull);
 			//counter = Integer.parseInt(tokens[3]);
 		}
@@ -86,14 +79,11 @@ public class SortColumnRecord {
 		String xml = "";
 		if(!in.equals("")){
 			String[] tokens = in.split("[" + delim + "]");
-			String nonNull = "false";
-			if(tokens[1].equalsIgnoreCase("nonNull")){
-				nonNull = "true";
-			}
+		
 			if(tokens[2].equalsIgnoreCase("selected")){
 				xml += "	<hyg:concept-fields>\r\n" +
 						"		<hyg:conceptFieldname>" + tokens[0] + "</hyg:conceptFieldname>\r\n" +
-						"		<hyg:nonNull>" + nonNull + "</hyg:nonNull>\r\n" +
+						"		<hyg:direction>" + tokens[1] + "</hyg:direction>\r\n" +
 						"	</hyg:concept-fields>\r\n";
 			}
 		}

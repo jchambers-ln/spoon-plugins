@@ -56,7 +56,7 @@ public class SortColumnLabelProvider extends LabelProvider implements ITableLabe
 	}
 
 	public Image getColumnImage(Object element, int columnIndex) {
-		return (columnIndex == 1) ? getImage(((SortColumnRecord) element).isNonNull()) : null;
+		return (columnIndex == 1) ? getImage(((SortColumnRecord) element).getDirection()=="descending") : null;
 	}
 	
 	

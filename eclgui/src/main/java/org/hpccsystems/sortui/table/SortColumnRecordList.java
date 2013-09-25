@@ -41,7 +41,7 @@ public class SortColumnRecordList {
 			} else {
 				SortColumnRecord obj = new SortColumnRecord();
 				obj.setChildren(val);
-				obj.setNonNull(false);
+				obj.setDirection("ascending");
 				mapFinalSortColumn.put(val, obj);
 			}
 		}
@@ -110,35 +110,35 @@ public class SortColumnRecordList {
 	public void initTestData() {
 		SortColumnRecord obj = new SortColumnRecord();
 		obj.setChildren("ProductName");
-		obj.setNonNull(true);
+		obj.setDirection("descending");
 		obj.setCounter(1);
 		obj.setSelect(true);
 		listSortColumn.add(obj);
 		
 		obj = new SortColumnRecord();
 		obj.setChildren("ProductCode");
-		obj.setNonNull(false);
+		obj.setDirection("ascending");
 		obj.setCounter(2);
 		obj.setSelect(false);
 		listSortColumn.add(obj);
 		
 		obj = new SortColumnRecord();
 		obj.setChildren("ProductType");
-		obj.setNonNull(true);
+		obj.setDirection("descending");
 		obj.setCounter(3);
 		obj.setSelect(true);
 		listSortColumn.add(obj);
 		
 		obj = new SortColumnRecord();
 		obj.setChildren("Test1");
-		obj.setNonNull(true);
+		obj.setDirection("descending");
 		obj.setCounter(4);
 		obj.setSelect(true);
 		listSortColumn.add(obj);
 		
 		obj = new SortColumnRecord();
 		obj.setChildren("Test2");
-		obj.setNonNull(false);
+		obj.setDirection("ascending");
 		obj.setCounter(5);
 		obj.setSelect(true);
 		listSortColumn.add(obj);

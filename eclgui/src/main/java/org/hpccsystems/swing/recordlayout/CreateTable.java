@@ -1,4 +1,4 @@
-package org.hpccsystems.recordlayout;
+package org.hpccsystems.swing.recordlayout;
 
 import java.awt.Robot;
 import java.util.ArrayList;
@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -18,11 +21,8 @@ import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.FocusCellOwnerDrawHighlighter;
-import org.eclipse.jface.viewers.ICellEditorListener;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerEditor;
 import org.eclipse.jface.viewers.TableViewerFocusCellManager;
@@ -31,8 +31,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusEvent;
@@ -41,7 +39,6 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.events.VerifyEvent;
@@ -72,7 +69,7 @@ import org.eclipse.swt.events.KeyListener;
 
 public class CreateTable {
     private Shell shell;
-    private String layoutType = "datasetLayout";     
+         
 	private Table table;
 	private TableViewer tableViewer;
 	private TabFolder tabFolder;
@@ -96,17 +93,8 @@ public class CreateTable {
 	
 	private boolean includeCopyParent = false;
 	private boolean selectColumns = false;
-	
-	
-	private String[] filedNameArr = null;
 
 	
-	public String[] getFiledNameArr() {
-		return filedNameArr;
-	}
-	public void setFiledNameArr(String[] filedNameArr) {
-		this.filedNameArr = filedNameArr;
-	}
 	public boolean isSelectColumns() {
 		return selectColumns;
 	}
@@ -164,10 +152,7 @@ public class CreateTable {
 	public CreateTable(Shell shell) {
 		this.shell = shell;
 	}
-	public CreateTable(Shell shell, String layoutType) {
-		this.shell = shell;
-		this.layoutType = layoutType;
-	}
+
 	
 	public void buildTest(Shell shell){
 		
@@ -230,15 +215,14 @@ public class CreateTable {
 		TabItem item1 = createTableObjectDS.buildDefTab("DATASET EX", tabFolder);
 		
 		
-     	final CreateTable createTableObject = new CreateTable(shell,"sortLayout");
+     	final CreateTable createTableObject = new CreateTable(shell);
      		
         String[] cNames = new String[] { createTableObject.NAME_COLUMN,createTableObject.SORT_ORDER  };
         createTableObject.setColumnNames(cNames);
     	
         createTableObject.setSelectColumns(true);
         //includeCopyParent
-        String[] inFields = {"t1","t2","t3"};
-		createTableObject.setFiledNameArr(inFields);
+		
 		TabItem item2 = createTableObject.buildDefTab("SORT EX", tabFolder);
 		
 		//createTableObject.getControl().addDisposeListener(new DisposeListener() {
@@ -330,7 +314,7 @@ public class CreateTable {
 		createTable(composite);		// Create the table 
 		createTableViewer();	// Create and setup the TableViewer
 		tableViewer.setContentProvider(new ExampleContentProvider());	//Set the Content Provider for the table	
-		tableViewer.setLabelProvider(new RecordLabels(layoutType));	//Set the Label Provider for the table
+		tableViewer.setLabelProvider(new RecordLabels());	//Set the Label Provider for the table
 		//recordList = new RecordList();
 		tableViewer.setInput(recordList);	//Add an empty RecordList to the TableViewer
 
@@ -522,7 +506,7 @@ public class CreateTable {
 		tableViewer.setColumnProperties(columnNames);
 
 		// Create the cell editors
-		final CellEditor[] editors = new CellEditor[columnNames.length];
+		CellEditor[] editors = new CellEditor[columnNames.length];
 		
 		// Column 1 : Column Name(Free text)
 		//if(columnNames.length >= 1) {
@@ -547,7 +531,6 @@ public class CreateTable {
 		if(showColumn("column_type")){
 			// Column 3 : Column Type (Combo Box) 
 			final ComboBoxCellEditor typeComboBox = new ComboBoxCellEditor(table, recordList.getColTypes(), SWT.DROP_DOWN|SWT.READ_ONLY);
-			//auto select logic
 			typeComboBox.getControl().addKeyListener(new KeyListener() {
 				String selectedItem = "";
 				public String letter = "";
@@ -606,30 +589,22 @@ public class CreateTable {
 			//TextCellEditor colSortTextEditor = new TextCellEditor(table);
 			//((Text) colSortTextEditor.getControl()).setTextLimit(10);
 			//editors[columnPosition("column_sort_order")] = colSortTextEditor;
-			final ComboBoxCellEditor c = new ComboBoxCellEditor(table, recordList.getColSortOrder(), SWT.DROP_DOWN|SWT.READ_ONLY);
-			/*c.addListener(new ICellEditorListener(){
-
-				@Override
-				public void applyEditorValue() {
-					// TODO Auto-generated method stub
-					System.out.println("apply");
-					//columnPosition("colutable.get
-				}
-
-				@Override
-				public void cancelEditor() {
-					// TODO Auto-generated method stub
-					System.out.println("cancel edit");
-				}
-
-				@Override
-				public void editorValueChanged(boolean arg0, boolean arg1) {
-					// TODO Auto-generated method stub
-					System.out.println("Val CHange");
-				}
-				
-			});*/
 			
+			TableColumn sportColumn = table.getColumn(columnPosition("column_sort_order"));
+			JComboBox comboBox = new JComboBox();
+			comboBox.addItem("Snowboarding");
+			comboBox.addItem("Rowing");
+			comboBox.addItem("Chasing toddlers");
+			comboBox.addItem("Speed reading");
+			comboBox.addItem("Teaching high school");
+			comboBox.addItem("None");
+			sportColumn.setData(sportColumn);
+			//sportColumn.set .setCellEditor(new DefaultCellEditor(comboBox));
+			//editors[columnPosition("column_sort_order")] = comboBox;
+			
+			/*
+			final ComboBoxCellEditor c = new ComboBoxCellEditor(table, recordList.getColSortOrder(), SWT.DROP_DOWN|SWT.READ_ONLY);
+			c.activate();
 			c.getControl().addKeyListener(new KeyListener() {
 				String selectedItem = "";
 				public String letter = "";
@@ -666,109 +641,11 @@ public class CreateTable {
 				} //End of keyReleased event
 
 			}); //End of addKeyListener
-			//c.addListener(keyReleased);
 			
 			editors[columnPosition("column_sort_order")] = c;
-			
-			/*table.getColumn(columnPosition("column_sort_order")).addControlListener(new ControlListener(){
-
-				@Override
-				public void controlMoved(ControlEvent arg0) {
-					// TODO Auto-generated method stub
-					System.out.println("c");
-				}
-
-				@Override
-				public void controlResized(ControlEvent arg0) {
-					// TODO Auto-generated method stub
-					System.out.println("d");
-				}});
-			*/
-			/*
-			table.getColumn(columnPosition("column_sort_order")).addSelectionListener(new SelectionListener(){
-
-				@Override
-				public void widgetDefaultSelected(SelectionEvent arg0) {
-					// TODO Auto-generated method stub
-					System.out.println("a");
-				}
-
-				@Override
-				public void widgetSelected(SelectionEvent arg0) {
-					// TODO Auto-generated method stub
-					System.out.println("b");
-				}});
-			*/
-			/*
-			editors[columnPosition("column_sort_order")].addListener(new ICellEditorListener(){
-
-				@Override
-				public void applyEditorValue() {
-					// TODO Auto-generated method stub
-					System.out.println("apply2");
-				}
-
-				@Override
-				public void cancelEditor() {
-					// TODO Auto-generated method stub
-					System.out.println("cancel edit2");
-				}
-
-				@Override
-				public void editorValueChanged(boolean arg0, boolean arg1) {
-					// TODO Auto-generated method stub
-					System.out.println("editor2");
-				}
-				
-			});
 			*/
 			
 		}
-		/*
-		 * 	//testing java code
-		tableViewer.addSelectionChangedListener(new ISelectionChangedListener(){
-
-		
-			
-			@Override
-			public void selectionChanged(SelectionChangedEvent arg0) {
-				// TODO Auto-generated method stub
-				System.out.println("changed");
-				System.out.println(arg0.getSelection().getClass().getName());
-				System.out.println(arg0.getSelection().getClass().toString());
-				System.out.println(((TableViewer)arg0.getSource()).getTable().getSelectionIndex());
-				//System.out.println(((TableViewer)arg0.getSource()).getTable().getSelectionCount());
-				System.out.println(((TableViewer)arg0.getSource()).getColumnViewerEditor().getFocusCell().getColumnIndex());
-				//System.out.println(((TableViewer)arg0.getSource()).getTable().getSelectionIndices()[1]);
-				int row = ((TableViewer)arg0.getSource()).getTable().getSelectionIndex();
-				int col = ((TableViewer)arg0.getSource()).getColumnViewerEditor().getFocusCell().getColumnIndex();
-				System.out.println(" column : " + ((TableViewer)arg0.getSource()).getTable().getColumn(col).getText());
-				String colName = ((TableViewer)arg0.getSource()).getTable().getColumn(col).getText();
-				if(colName.equals("Sort Order") || colName.equals("Column Type")){
-					//((TableViewer)arg0.getSource()).getColumnViewerEditor().getFocusCell().getControl();
-					System.out.println("Testing");
-					System.out.println("SELECTED VALUE:" + ((RecordBO)(((TableViewer)arg0.getSource()).getTable().getSelection()[0]).getData()).getSortOrder());
-					//System.out.println("Len:" + (((TableViewer)arg0.getSource()).getTable().getSelection()[0]));
-					//System.out.println("Cell Editor: " + ((ComboBoxCellEditor)((TableViewer)arg0.getSource()).getCellEditors()[col]).getItems()[1]);
-					//System.out.println("Cell Editor Val: " + ((ComboBoxCellEditor)((TableViewer)arg0.getSource()).getCellEditors()[col]).getValue());
-					//((ComboBoxCellEditor)((TableViewer)arg0.getSource()).getCellEditors()[col]).activate();
-					((ComboBoxCellEditor)((TableViewer)arg0.getSource()).getCellEditors()[col]).setFocus();
-					//((ComboBoxCellEditor)((TableViewer)arg0.getSource()).getC .getCellEditors()[col]).setValue("A");
-					//editors[columnPosition("column_type")] = typeComboBox;
-					
-					
-					
-				}
-				try{
-					Robot r = new Robot();
-					//r.keyPress(java.awt.event.KeyEvent.VK_ENTER);
-				}catch(Exception e){
-					System.out.println(e);
-				}
-			}
-			
-		});
-		 */
 		// Assign the cell editors to the viewer 
 		tableViewer.setCellEditors(editors);
 		// Set the cell modifier for the viewer
@@ -811,7 +688,7 @@ public class CreateTable {
 		gridData.widthHint = 80;
 		
 		// Create and configure the "Add" button
-		//if(!this.selectColumns){//decided to keep the add button in all cases if user prefers this use case
+		if(!this.selectColumns){
 			Button add = new Button(parent, SWT.PUSH | SWT.CENTER);
 			add.setText("Add");
 			
@@ -825,23 +702,28 @@ public class CreateTable {
 	                                table.redraw();
 				}
 			});
-		//}
+		}
 		
 		if(this.selectColumns){
-			Button selCol = new Button(parent, SWT.PUSH | SWT.CENTER);
-			selCol.setText("Select Columns");
+			Button add = new Button(parent, SWT.PUSH | SWT.CENTER);
+			add.setText("Select Columns");
 			
 			
-			selCol.setLayoutData(gridData);
-			selCol.addSelectionListener(new SelectionAdapter() {
+			add.setLayoutData(gridData);
+			add.addSelectionListener(new SelectionAdapter() {
 	       		// Add a record and refresh the view
 				public void widgetSelected(SelectionEvent e) {
 					/*recordList.addRecord(table.getSelectionIndex());
 	                                tableViewer.refresh();
 	                                table.redraw();*/
 					AddColumnsDialog acd = new AddColumnsDialog(shell.getDisplay());
-					
-					acd.setItems(filedNameArr);
+					String[] testData = {"test", 
+						"test2",
+						"abc",
+						"fname",
+						"lname"
+						};
+					acd.setItems(testData);
 					acd.run();
 					ArrayList<String> selCols = acd.getSelectedColumns();
 					if(selCols != null && selCols.size() > 0) {
@@ -1060,15 +942,12 @@ public class CreateTable {
 			protected boolean isEditorActivationEvent( ColumnViewerEditorActivationEvent event) {
 				return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
 						|| event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
-						
 						|| (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == SWT.CR)
 						|| (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == SWT.TAB)
-						|| event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC
-						;
+						|| event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC;
 			}
 		};
-		//|| event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
-		//
+		
 		TableViewerEditor.create(tableViewer, focusCellManager, actSupport, ColumnViewerEditor.TABBING_HORIZONTAL
 				| ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR
 				| ColumnViewerEditor.TABBING_VERTICAL | ColumnViewerEditor.KEYBOARD_ACTIVATION);
@@ -1080,7 +959,6 @@ public class CreateTable {
 				if (arg0.keyCode == SWT.TAB){
 					arg0.doit = false;
 				}
-				
 			}
 		});
 		

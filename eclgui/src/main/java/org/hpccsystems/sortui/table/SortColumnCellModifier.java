@@ -34,7 +34,7 @@ public class SortColumnCellModifier implements ICellModifier {
 			result = record.getChildren();
 			break;
 		case 1: // NON_NULL_COLUMN
-			result = new Boolean(record.isNonNull());
+			result = record.getDirection();
 			break;
 		default:
 			result = "";
@@ -58,9 +58,9 @@ public class SortColumnCellModifier implements ICellModifier {
 				break;
 			case 1: // NON_NULL_COLUMN
 				if(item.getChecked() == false) {
-					record.setNonNull(item.getChecked());
+					record.setDirection("descending");
 				} else {
-					record.setNonNull(((Boolean) value).booleanValue());
+					record.setDirection("ascending");
 				}
 				break;
 			default:
