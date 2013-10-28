@@ -1083,8 +1083,8 @@ public class AutoPopulate {
     			}
     		}
     	}
-    	System.out.println("_______________________");
-    	System.out.println("Multiple Line Test");
+    	//System.out.println("_______________________");
+    	//System.out.println("Multiple Line Test");
     	compileFlags = "-I /home/ubuntu/DeepGlance\r\n-I /ho me/ubu ntu/DeepGlance\r\n-O\r\n";
     	compileFlagsAL = ap.compileFlagsToArrayList(compileFlags);
     	
