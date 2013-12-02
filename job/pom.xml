@@ -11,18 +11,23 @@
 		<version>0.1.0</version>
 	</parent>
 	<modules>
+		<module>eclcount</module>
 		<module>ecldataset</module>
 		<module>ecldedup</module>
 		<module>ecldespray</module>
 		<module>ecldistribute</module>
-		<module>eclexecute</module>
 		<module>eclerror</module>
+		<module>eclexecute</module>
+		<module>eclfilter</module>
 		<module>eclgeneric</module>
 		<module>eclglobalvariables</module>
 		<module>eclgroup</module>
 		<module>eclindex</module>
 		<module>ecliterate</module>
 		<module>ecljoin</module>
+		<module>ecllimit</module>
+		<module>eclloop</module>
+		<module>eclmerge</module>
 		<module>eclmergepaths</module>
 		<module>ecloutput</module>
 		<module>eclproject</module>
@@ -30,10 +35,6 @@
 		<module>eclsort</module>
 		<module>eclsprayfile</module>
 		<module>ecltable</module>
-		<module>eclcount</module>
-		<module>ecllimit</module>
-		<module>eclloop</module>
-		<module>eclmerge</module>
 	</modules>
 
 	<properties>
