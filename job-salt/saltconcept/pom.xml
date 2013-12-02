@@ -8,7 +8,7 @@
 	<description></description>
 	<parent>
 		<groupId>org.hpccsystems.pentaho</groupId>
-		<artifactId>job</artifactId>
+		<artifactId>job-salt</artifactId>
 		<version>0.1.0</version>
 	</parent>
 

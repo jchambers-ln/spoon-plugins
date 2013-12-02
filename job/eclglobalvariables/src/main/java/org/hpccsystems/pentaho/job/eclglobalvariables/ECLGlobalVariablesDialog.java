@@ -450,6 +450,8 @@ public class ECLGlobalVariablesDialog extends ECLJobEntryDialog{//extends JobEnt
     		eclccInstallDir.setText(eclccInstallDir.getText() + slash);
     	}
     	
+    	
+    	
     	if(includeML.getText().equals("true")){
 	    	String mlP = mlPath.getText();
 	    	boolean mlLast = false;
@@ -623,6 +625,12 @@ public class ECLGlobalVariablesDialog extends ECLJobEntryDialog{//extends JobEnt
     		isValid = false;
     		errors += "You must provide a \"eclcc Install Dir\"!\r\n";
     	}*/
+    	
+    	boolean pathExists = (new File(eclccInstallDir.getText())).exists();
+    	if(!pathExists){
+    		isValid = false;
+    		errors += "The provided \"eclcc Install Dir\" doesn't exist!\r\n";
+    	}
     	
     	if(includeMLLib && this.includeML.getText().equals("true")){
     		if(this.mlPath.getText().equals("")){
