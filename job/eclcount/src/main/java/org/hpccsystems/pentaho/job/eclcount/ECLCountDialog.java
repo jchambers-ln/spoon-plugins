@@ -52,7 +52,7 @@ public class ECLCountDialog extends ECLJobEntryDialog{//JobEntryDialog implement
 	private Text recordsetName;
 	private Combo recordset;
 	private Text expression;
-	private Text keyed;
+	private Combo keyed;
 	private Text valuelist;
 	
 	private Button wOK, wCancel;
@@ -142,10 +142,10 @@ public class ECLCountDialog extends ECLJobEntryDialog{//JobEntryDialog implement
         
         recordsetName = buildText("Result Recordset", null, lsMod, middle, margin, countGroup);
         recordset = buildCombo("Recordset", recordsetName, lsMod, middle, margin, countGroup, datasets);
-        expression = buildText("Expression", recordset, lsMod, middle, margin, countGroup);
-        keyed = buildText("Keyed", expression, lsMod, middle, margin, countGroup);
-        valuelist = buildText("Value List", keyed, lsMod, middle, margin, countGroup);
-        
+        //expression = buildText("Expression", recordset, lsMod, middle, margin, countGroup);
+       // keyed = buildText("Keyed", recordset, lsMod, middle, margin, countGroup);
+        //valuelist = buildText("Value List", keyed, lsMod, middle, margin, countGroup);
+        keyed = buildCombo("Keyed?", recordset, lsMod, middle, margin, countGroup, new String[] {"false","true"});
         wOK = new Button(shell, SWT.PUSH);
         wOK.setText("OK");
         wCancel = new Button(shell, SWT.PUSH);
@@ -197,17 +197,17 @@ public class ECLCountDialog extends ECLJobEntryDialog{//JobEntryDialog implement
             recordset.setText(jobEntry.getRecordSet());
         }
         
-        if (jobEntry.getExpression() != null) {
-            expression.setText(jobEntry.getExpression());
-        }
+        //if (jobEntry.getExpression() != null) {
+       //     expression.setText(jobEntry.getExpression());
+       // }
         
          if (jobEntry.getKeyed() != null) {
             keyed.setText(jobEntry.getKeyed());
         }
          
-        if (jobEntry.getValueList() != null) {
-            valuelist.setText(jobEntry.getValueList());
-        }
+        //if (jobEntry.getValueList() != null) {
+        //    valuelist.setText(jobEntry.getValueList());
+        //}
         
         shell.pack();
         shell.open();
@@ -237,15 +237,18 @@ public class ECLCountDialog extends ECLJobEntryDialog{//JobEntryDialog implement
     		//one is required.
     		isValid = false;
     		errors += "You must provide a \"Result Recordset\"!\r\n";
+    	}else if(this.recordsetName.getText().contains(" ")){
+    		isValid = false;
+    		errors += "\"Result Recordset\" can not contain spaces!\r\n";
     	}
     	
-    	if(this.recordset.getText().equals("") && this.valuelist.getText().equals("")){
+    	if(this.recordset.getText().equals("")){// && this.valuelist.getText().equals("")){
     		//one is required.
     		isValid = false;
-    		errors += "You must provide either a \"Recordset\" or a \"Value List\"!\r\n";
+    		errors += "You must provide either a \"Recordset\"!\r\n"; //or a \"Value List\"
     	}
     	
-    	if(!this.recordset.getText().equals("") && !this.valuelist.getText().equals("")){
+    	/*if(!this.recordset.getText().equals("") && !this.valuelist.getText().equals("")){
     		//one is required.
     		isValid = false;
     		errors += "You must provide either a \"Recordset\" or a \"Value List\" but not both!\r\n";
@@ -258,7 +261,7 @@ public class ECLCountDialog extends ECLJobEntryDialog{//JobEntryDialog implement
     	    		errors += "When using a \"Value List\" \"Expression\" and \"Keyed\" must be blank!\r\n";
     			}
     		}
-    	}
+    	}*/
     	
     	
     	if(!isValid){
@@ -279,9 +282,9 @@ public class ECLCountDialog extends ECLJobEntryDialog{//JobEntryDialog implement
 
         jobEntry.setRecordsetName(recordsetName.getText());
         jobEntry.setRecordSet(recordset.getText());
-        jobEntry.setExpression(expression.getText());
+        //jobEntry.setExpression(expression.getText());
         jobEntry.setKeyed(keyed.getText());
-        jobEntry.setValueList(valuelist.getText());
+        //jobEntry.setValueList(valuelist.getText());
 
         dispose();
     }

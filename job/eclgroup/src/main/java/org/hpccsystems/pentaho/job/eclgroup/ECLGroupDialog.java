@@ -4,6 +4,8 @@
  */
 package org.hpccsystems.pentaho.job.eclgroup;
 
+import java.util.Iterator;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -11,6 +13,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -24,6 +27,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.hpccsystems.eclguifeatures.AutoPopulate;
 import org.hpccsystems.eclguifeatures.ErrorNotices;
@@ -37,6 +42,8 @@ import org.pentaho.di.ui.job.dialog.JobDialog;
 import org.pentaho.di.ui.job.entry.JobEntryDialog;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.hpccsystems.ecljobentrybase.*;
+import org.hpccsystems.recordlayout.CreateTable;
+import org.hpccsystems.recordlayout.RecordBO;
 /**
  *
  * @author SimmonsJA
@@ -44,12 +51,13 @@ import org.hpccsystems.ecljobentrybase.*;
 public class ECLGroupDialog extends ECLJobEntryDialog{//extends JobEntryDialog implements JobEntryDialogInterface {
 	
 	private ECLGroup jobEntry;
-	
+	private CreateTable createTableObject = new CreateTable(shell,"groupLayout");
+	   
 	private Text jobEntryName;
 	
 	private Text recordsetName;
 	private Combo recordset;
-	private Text breakCriteria;
+	//private Text breakCriteria;
 	private Combo isAll;
 	private Combo runLocal;
 	
@@ -71,6 +79,19 @@ public class ECLGroupDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
 		shell = new Shell(parentShell, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MIN | SWT.MAX);
 		
 		props.setLook(shell);
+		TabFolder tabFolder = new TabFolder (shell, SWT.FILL | SWT.RESIZE | SWT.MIN | SWT.MAX);
+        FormData data = new FormData();
+        
+        data.height = 500;
+        data.width = 650;
+        tabFolder.setLayoutData(data);
+        Composite compForGrp = new Composite(tabFolder, SWT.NONE);
+        //compForGrp.setLayout(new FillLayout(SWT.VERTICAL));
+        compForGrp.setBackground(new Color(tabFolder.getDisplay(),255,255,255));
+        compForGrp.setLayout(new FormLayout());
+        
+        TabItem item1 = new TabItem(tabFolder, SWT.NULL);
+        item1.setText ("General");
 		JobDialog.setShellImage(shell, jobEntry);
 		
 		ModifyListener lsMod = new ModifyListener() {
@@ -111,7 +132,7 @@ public class ECLGroupDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
         groupLayout.marginHeight = 10;
 
         // Stepname line
-        Group generalGroup = new Group(shell, SWT.SHADOW_NONE);
+        Group generalGroup = new Group(compForGrp, SWT.SHADOW_NONE);
         props.setLook(generalGroup);
         generalGroup.setText("General Details");
         generalGroup.setLayout(groupLayout);
@@ -126,9 +147,9 @@ public class ECLGroupDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
 
         //All other contols
         //Distribute Declaration
-        Group groupGroup = new Group(shell, SWT.SHADOW_NONE);
+        Group groupGroup = new Group(compForGrp, SWT.SHADOW_NONE);
         props.setLook(groupGroup);
-        groupGroup.setText("Distribute Details");
+        groupGroup.setText("Group Details");
         groupGroup.setLayout(groupLayout);
         FormData datasetGroupFormat = new FormData();
         datasetGroupFormat.top = new FormAttachment(generalGroup, margin);
@@ -140,11 +161,52 @@ public class ECLGroupDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
         
         recordsetName = buildText("Result Recordset", null, lsMod, middle, margin, groupGroup);
         recordset = buildCombo("Recordset", recordsetName, lsMod, middle, margin, groupGroup, datasets);
-        breakCriteria = buildText("Break Criteria", recordset, lsMod, middle, margin, groupGroup);
+       // breakCriteria = buildText("Break Criteria", recordset, lsMod, middle, margin, groupGroup);
         
-        isAll = buildCombo("All", breakCriteria, lsMod, middle, margin, groupGroup,new String[]{"false", "true"});
+        isAll = buildCombo("All", recordset, lsMod, middle, margin, groupGroup,new String[]{"false", "true"});
         
         runLocal = buildCombo("RUNLOCAL", isAll, lsMod, middle, margin, groupGroup,new String[]{"false", "true"});
+        
+        recordset.addModifyListener(new ModifyListener(){
+            public void modifyText(ModifyEvent e){
+                System.out.println("left RS changed");
+                AutoPopulate ap = new AutoPopulate();
+                try{
+                    System.out.println("Load items for select");
+                    String[] items = ap.fieldsByDataset( recordset.getText(),jobMeta.getJobCopies());
+                    createTableObject.setFiledNameArr(items);
+                }catch (Exception ex){
+                    System.out.println("failed to load record definitions");
+                    System.out.println(ex.toString());
+                    ex.printStackTrace();
+                }
+               // leftJoinCondition.setItems(items);
+            }
+        });
+        
+        item1.setControl(compForGrp);
+        
+        if(jobEntry.getRecordList() != null){
+            // recordList = jobEntry.getRecordList();
+         	createTableObject.setRecordList(jobEntry.getRecordList());
+             
+             if(jobEntry.getRecordList().getRecords() != null && jobEntry.getRecordList().getRecords().size() > 0) {
+                     System.out.println("Size: "+jobEntry.getRecordList().getRecords().size());
+                     for (Iterator<RecordBO> iterator = jobEntry.getRecordList().getRecords().iterator(); iterator.hasNext();) {
+                             RecordBO obj = (RecordBO) iterator.next();
+                     }
+             }
+         }
+      	
+        String[] cNames = new String[] { createTableObject.NAME_COLUMN  };
+        createTableObject.setColumnNames(cNames);
+    	
+        createTableObject.setSelectColumns(true);
+        createTableObject.setAddButton(false);
+        //includeCopyParent
+        //String[] inFields = {"t1","t2","t3"};
+		//createTableObject.setFiledNameArr(inFields);
+		TabItem item2 = createTableObject.buildDefTab("Group Fields", tabFolder);
         
         wOK = new Button(shell, SWT.PUSH);
         wOK.setText("OK");
@@ -152,7 +214,7 @@ public class ECLGroupDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
         wCancel.setText("Cancel");
         
         
-        BaseStepDialog.positionBottomButtons(shell, new Button[]{wOK, wCancel}, margin, groupGroup);
+        BaseStepDialog.positionBottomButtons(shell, new Button[]{wOK, wCancel}, margin, tabFolder);
 
         // Add listeners
         Listener cancelListener = new Listener() {
@@ -197,10 +259,10 @@ public class ECLGroupDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
             recordset.setText(jobEntry.getRecordSet());
         }
         
-        if (jobEntry.getBreakCriteria() != null) {
-            breakCriteria.setText(jobEntry.getBreakCriteria());
-        }
-        
+       // if (jobEntry.getBreakCriteria() != null) {
+      //      breakCriteria.setText(jobEntry.getBreakCriteria());
+       // }
+       
          if (jobEntry.getIsAllString() != null) {
             isAll.setText(jobEntry.getIsAllString());
         }
@@ -263,7 +325,7 @@ public class ECLGroupDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
 
         jobEntry.setRecordSetName(recordsetName.getText());
         jobEntry.setRecordSet(recordset.getText());
-        jobEntry.setBreakCriteria(breakCriteria.getText());
+      //  jobEntry.setBreakCriteria(breakCriteria.getText());
         
         jobEntry.setIsAllString(isAll.getText());
         jobEntry.setRunLocalString(runLocal.getText());

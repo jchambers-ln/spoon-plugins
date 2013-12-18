@@ -91,7 +91,10 @@ public class ECLCount extends ECLJobEntry{//extends JobEntryBase implements Clon
 		count.setName(this.getRecordsetName());
 		count.setRecordSet(this.getRecordSet());
 		count.setExpression(this.getExpression());
-		count.setKeyed(this.getKeyed());
+		if(this.getKeyed().equalsIgnoreCase("true")){
+			count.setKeyed("KEYED");
+		}
+		//count.setKeyed(this.getKeyed());
 		count.setValueList(this.getValueList());
 		
 		logBasic("{Count job} Execute = " + count.ecl());

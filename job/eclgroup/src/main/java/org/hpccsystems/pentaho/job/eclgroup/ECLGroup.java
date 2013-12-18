@@ -5,8 +5,12 @@
 package org.hpccsystems.pentaho.job.eclgroup;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
 import org.hpccsystems.javaecl.Group;
+import org.hpccsystems.recordlayout.RecordBO;
+import org.hpccsystems.recordlayout.RecordList;
 import org.pentaho.di.cluster.SlaveServer;
 import org.pentaho.di.compatibility.Value;
 import org.pentaho.di.core.Const;
@@ -34,9 +38,16 @@ public class ECLGroup extends ECLJobEntry{//extends JobEntryBase implements Clon
 	private String breakCriteria;
 	private Boolean isAll = false;
 	private Boolean runLocal = false;
+	private RecordList recordList = new RecordList();
+    
+
+	public RecordList getRecordList() {
+		return recordList;
+	}
 	
-	
-	
+	public void setRecordList(RecordList recordList) {
+		this.recordList = recordList;
+	}
 	
 	public String getRecordSetName() {
 		return recordsetName;
@@ -103,7 +114,27 @@ public class ECLGroup extends ECLJobEntry{//extends JobEntryBase implements Clon
 		else
 			this.runLocal = false;
 	}
-	
+	 public String recordListToGroupECL(){
+	        String out = "";
+	        
+	        if(recordList != null){
+	            if(recordList.getRecords() != null && recordList.getRecords().size() > 0) {
+	                   
+	                    for (Iterator<RecordBO> iterator = recordList.getRecords().iterator(); iterator.hasNext();) {
+	                            RecordBO record = (RecordBO) iterator.next();
+	                        	 if(!out.equals("")){
+	                            	out += ",";
+	                            }
+	                            
+	                            out += record.getColumnName();
+	                            
+	                            
+	                    }
+	            }
+	        }
+	        
+	        return out;
+	    }
 	
 	@Override
 	public Result execute(Result prevResult, int k) throws KettleException {
@@ -120,7 +151,7 @@ public class ECLGroup extends ECLJobEntry{//extends JobEntryBase implements Clon
 		
 		group.setName(this.getRecordSetName());
 		group.setRecordSet(this.getRecordSet());
-		group.setBreakCriteria(this.getBreakCriteria());
+		group.setBreakCriteria(recordListToGroupECL());
 		group.setIsAll(this.getIsAll());
 		group.setRunLocal(this.getIsRunLocal());
 		
@@ -165,6 +196,8 @@ public class ECLGroup extends ECLJobEntry{//extends JobEntryBase implements Clon
             this.setBreakCriteria(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"breakCriteria")));
             this.setIsAllString(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"isAll")));
             this.setRunLocalString(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"runLocal")));
+            if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "recordList")) != null)
+                openRecordList(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "recordList")));
 
         } catch (Exception e) {
             throw new KettleXMLException("ECL Group Job Plugin is unable to read step info from XML node", e);
@@ -172,6 +205,8 @@ public class ECLGroup extends ECLJobEntry{//extends JobEntryBase implements Clon
 
     }
 	
+
+
 	public String getXML() {
         String retval = "";
         
@@ -182,6 +217,7 @@ public class ECLGroup extends ECLJobEntry{//extends JobEntryBase implements Clon
         retval += "             <breakCriteria><![CDATA["+this.breakCriteria+"]]></breakCriteria>"+Const.CR;
         retval += "             <isAll><![CDATA["+this.getIsAllString()+"]]></isAll>"+Const.CR;
         retval += "             <runLocal><![CDATA["+this.getIsRunLocalString()+"]]></runLocal>"+Const.CR;
+        retval += "		<recordList><![CDATA[" + this.saveRecordList() + "]]></recordList>" + Const.CR;
 
         return retval;
 
@@ -196,6 +232,8 @@ public class ECLGroup extends ECLJobEntry{//extends JobEntryBase implements Clon
             breakCriteria = rep.getStepAttributeString(id_jobentry, "breakCriteria");
             this.setIsAllString(rep.getStepAttributeString(id_jobentry, "isAll"));
             this.setRunLocalString(rep.getStepAttributeString(id_jobentry, "runLocal"));
+            if(rep.getStepAttributeString(id_jobentry, "recordList") != null)
+                this.openRecordList(rep.getStepAttributeString(id_jobentry, "recordList")); //$NON-NLS-1$
             
         } catch (Exception e) {
             throw new KettleException("Unexpected Exception", e);
@@ -209,11 +247,41 @@ public class ECLGroup extends ECLJobEntry{//extends JobEntryBase implements Clon
             rep.saveStepAttribute(id_job, getObjectId(), "breakCriteria", breakCriteria);
             rep.saveStepAttribute(id_job, getObjectId(), "isAll", this.getIsAllString());
             rep.saveStepAttribute(id_job, getObjectId(), "runLocal", this.getIsRunLocalString());
-        
+            rep.saveStepAttribute(id_job, getObjectId(), "recordList", this.saveRecordList()); //$NON-NLS-1$
+            
         } catch (Exception e) {
             throw new KettleException("Unable to save info into repository" + id_job, e);
         }
     }
 
-	
+	 public String saveRecordList(){
+	        String out = "";
+	        ArrayList list = recordList.getRecords();
+	        Iterator<RecordBO> itr = list.iterator();
+	        boolean isFirst = true;
+	        while(itr.hasNext()){
+	            if(!isFirst){out+="|";}
+	            
+	            out += itr.next().toCSV();
+	            isFirst = false;
+	        }
+	        return out;
+	    }
+	    
+	    public void openRecordList(String in){
+	        String[] strLine = in.split("[|]");
+	        
+	        int len = strLine.length;
+	        if(len>0){
+	            recordList = new RecordList();
+	            //System.out.println("Open Record List");
+	            for(int i =0; i<len; i++){
+	                //System.out.println("++++++++++++" + strLine[i]);
+	                //this.recordDef.addRecord(new RecordBO(strLine[i]));
+	                RecordBO rb = new RecordBO(strLine[i]);
+	                //System.out.println(rb.getColumnName());
+	                recordList.addRecordBO(rb);
+	            }
+	        }
+	    }
 }

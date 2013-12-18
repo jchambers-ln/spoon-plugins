@@ -1,6 +1,7 @@
 package org.pentaho.di.plugins.perspectives.eclresults;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
@@ -29,6 +30,7 @@ import java.io.*;
 import java.lang.reflect.Method;
 
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 
 
@@ -41,6 +43,13 @@ import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.browser.ProgressEvent;
+import org.eclipse.swt.browser.ProgressListener;
+import org.eclipse.swt.browser.StatusTextEvent;
+import org.eclipse.swt.browser.StatusTextListener;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
@@ -245,6 +254,10 @@ public class ECLResultsSwtPerspective implements SpoonPerspective {
 					  buildSummaryTab(filePath,resType,subfolder);
 				  }else if(resType.equalsIgnoreCase("Dataprofiling_OptimizedLayout")){
 					  buildOptimizedLayoutTab(filePath,resType,subfolder);
+				  }else if(resType.toLowerCase().startsWith("PieChart".toLowerCase()) || resType.toLowerCase().startsWith("LineChart".toLowerCase()) ||
+						   resType.toLowerCase().startsWith("BarChart".toLowerCase()) || resType.toLowerCase().startsWith("ScatterChart".toLowerCase())){
+					  buildTab(filePath,resType,subfolder);
+					  buildBrowser(resType, subfolder, thisServerAddress, thisWuid);
 				  }else{//CleanedData
 					  buildTab(filePath,resType,subfolder);
 				  }
@@ -258,6 +271,57 @@ public class ECLResultsSwtPerspective implements SpoonPerspective {
   
       
       
+  }
+  public void buildBrowser(String resType, CTabFolder subfolder, String ServerAddress, String Wuid){
+	  	System.out.println("buildBrowser");        
+	    CTabItem tab2 = new CTabItem(subfolder, SWT.NONE);
+	    tab2.setText(resType);
+	    
+	    final Browser browser;
+		try {
+			browser = new Browser(subfolder, SWT.NONE);
+		} catch (SWTError e) {
+			System.out.println("Could not instantiate Browser: " + e.getMessage());
+			subfolder.dispose();
+			return;
+		}
+		GridData data = new GridData();
+		data.horizontalAlignment = GridData.FILL;
+		data.verticalAlignment = GridData.FILL;
+		data.horizontalSpan = 3;
+		data.grabExcessHorizontalSpace = true;
+		data.grabExcessVerticalSpace = true;
+		browser.setLayoutData(data);
+		
+		final Label status = new Label(subfolder, SWT.NONE);
+		data = new GridData(GridData.FILL_HORIZONTAL);
+		data.horizontalSpan = 2;
+		status.setLayoutData(data);
+
+		final ProgressBar progressBar = new ProgressBar(subfolder, SWT.NONE);
+		data = new GridData();
+		data.horizontalAlignment = GridData.END;
+		progressBar.setLayoutData(data);
+		
+		browser.addProgressListener(new ProgressListener() {
+			public void changed(ProgressEvent event) {
+					if (event.total == 0) return;                            
+					int ratio = event.current * 100 / event.total;
+					progressBar.setSelection(ratio);
+			}
+			public void completed(ProgressEvent event) {
+				progressBar.setSelection(0);
+			}
+		});
+		browser.addStatusTextListener(new StatusTextListener() {
+			public void changed(StatusTextEvent event) {
+				status.setText(event.text);	
+			}
+		});
+		
+		browser.setUrl(ServerAddress + "/WsWorkunits/WUResultView?Wuid=" + Wuid + "&ResultName="+resType+"&ViewName=Google%20Chart%20by%20name");
+		tab2.setControl(browser);
+	      
   }
   public void buildTab(String filename,String resType,CTabFolder subfolder){
     System.out.println("buildTab");        

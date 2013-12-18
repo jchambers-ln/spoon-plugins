@@ -3,6 +3,7 @@ package org.hpccsystems.pentaho.job.ecllimit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hpccsystems.javaecl.Fail;
 import org.hpccsystems.javaecl.Limit;
 import org.pentaho.di.cluster.SlaveServer;
 import org.pentaho.di.compatibility.Value;
@@ -27,6 +28,8 @@ public class ECLLimit extends ECLJobEntry{//extends JobEntryBase implements Clon
 	private String recordset;
 	private String maxRecs;
 	private String failClause;
+	private String errorMessage;
+	private String errorCode;
 	private Boolean keyed = false;
 	private Boolean count = false;
 	private Boolean skip = false;
@@ -64,13 +67,13 @@ public class ECLLimit extends ECLJobEntry{//extends JobEntryBase implements Clon
 		this.maxRecs = maxRecs;
 	}
 	
-	public String getFailClause() {
-		return failClause;
-	}
+	//public String getFailClause() {
+	//	return failClause;
+	//}
 	
-	public void setFailClause(String failClause) {
-		this.failClause = failClause;
-	}
+	//public void setFailClause(String failClause) {
+	//	this.failClause = failClause;
+	//}
 	
 	public boolean getKeyed() {
 		return keyed;
@@ -152,6 +155,24 @@ public class ECLLimit extends ECLJobEntry{//extends JobEntryBase implements Clon
 		this.onFailTransform = onFailTransform;
 	}
 	
+	
+	
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+
+	public String getErrorCode() {
+		return errorCode;
+	}
+
+	public void setErrorCode(String errorCode) {
+		this.errorCode = errorCode;
+	}
+
 	@Override
     public Result execute(Result prevResult, int k) throws KettleException {
         
@@ -159,25 +180,31 @@ public class ECLLimit extends ECLJobEntry{//extends JobEntryBase implements Clon
 		if(result.isStopped()){
         	return result;
  		}
+		
+		Fail fail = new Fail();
+		fail.setErrormessage(errorMessage);
+		fail.setErrorcode(errorCode);
+		failClause = fail.ecl();
 		Limit limit = new Limit();
 		
 		limit.setResult(this.getRecordsetName());
 		limit.setRecordset(this.getRecordset());
 		limit.setMaxRecs(this.getMaxRecs());
-		limit.setFailClause(this.getFailClause());
+		limit.setFailClause(failClause);
 		limit.setKeyed(this.getKeyed());
 		limit.setCount(this.getCount());
 		limit.setSkip(this.getSkip());
 		limit.setOnFailTransform(this.getOnFailTransform());
 		
-		logBasic("{Limit job} Execute = " + limit.ecl());
+		String limitECL = limit.ecl();// + this.getRecordsetName() + ";\r\n";
+		logBasic("{Limit job} Execute = " + limitECL);
 		
-		logBasic("{Limit job} Previous = " + result.getLogText());
+		logBasic("{Limit job} Previous = " + result.getLogText() );
 		
 		result.setResult(true);
 		
 		RowMetaAndData data = new RowMetaAndData();
-		data.addValue("ecl", Value.VALUE_TYPE_STRING, limit.ecl());
+		data.addValue("ecl", Value.VALUE_TYPE_STRING, limitECL);
 		
 		List list = result.getRows();
 		list.add(data);
@@ -209,7 +236,9 @@ public class ECLLimit extends ECLJobEntry{//extends JobEntryBase implements Clon
             this.setRecordsetName(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "recordset_name")));
             this.setRecordset(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "recordset")));
             this.setMaxRecs(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "maxRecs")));
-            this.setFailClause(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "failClause")));
+           // this.setFailClause(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "failClause")));
+            this.setErrorCode(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "errorCode")));
+            this.setErrorMessage(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "errorMessage")));
             this.setKeyedString(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "keyed")));
             this.setCountString(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "count")));
             this.setSkipString(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "skip")));
@@ -229,7 +258,9 @@ public class ECLLimit extends ECLJobEntry{//extends JobEntryBase implements Clon
         retval += "		<recordset_name eclIsDef=\"true\" eclType=\"recordset\"><![CDATA[" + this.recordsetName + "]]></recordset_name>" + Const.CR;
         retval += "		<recordset><![CDATA[" + this.recordset + "]]></recordset>" + Const.CR;
         retval += "		<maxRecs><![CDATA[" + this.maxRecs + "]]></maxRecs>" + Const.CR;
-        retval += "		<failClause><![CDATA[" + this.failClause + "]]></failClause>" + Const.CR;
+       // retval += "		<failClause><![CDATA[" + this.failClause + "]]></failClause>" + Const.CR;
+        retval += "		<errorMessage><![CDATA[" + this.errorMessage + "]]></errorMessage>" + Const.CR;
+        retval += "		<errorCode><![CDATA[" + this.errorCode + "]]></errorCode>" + Const.CR;
         retval += "		<keyed><![CDATA[" + this.keyed + "]]></keyed>" + Const.CR;
         retval += "		<count><![CDATA[" + this.count + "]]></count>" + Const.CR;
         retval += "		<skip><![CDATA[" + this.skip + "]]></skip>" + Const.CR;
@@ -245,7 +276,9 @@ public class ECLLimit extends ECLJobEntry{//extends JobEntryBase implements Clon
         	this.recordsetName = rep.getStepAttributeString(id_jobentry, "recordset_name");
             this.recordset = rep.getStepAttributeString(id_jobentry, "recordset"); //$NON-NLS-1$
             this.maxRecs = rep.getStepAttributeString(id_jobentry, "maxRecs"); //$NON-NLS-1$
-            this.failClause = rep.getStepAttributeString(id_jobentry, "failClause"); //$NON-NLS-1$
+           // this.failClause = rep.getStepAttributeString(id_jobentry, "failClause"); //$NON-NLS-1$
+            this.errorCode = rep.getStepAttributeString(id_jobentry, "errorCode"); //$NON-NLS-1$
+            this.errorMessage = rep.getStepAttributeString(id_jobentry, "errorMessage"); //$NON-NLS-1$
             this.setKeyedString(rep.getStepAttributeString(id_jobentry, "keyed")); //$NON-NLS-1$
             this.setCountString(rep.getStepAttributeString(id_jobentry, "count")); //$NON-NLS-1$
             this.setSkipString(rep.getStepAttributeString(id_jobentry, "skip")); //$NON-NLS-1$
@@ -261,7 +294,9 @@ public class ECLLimit extends ECLJobEntry{//extends JobEntryBase implements Clon
         	rep.saveStepAttribute(id_job, getObjectId(), "recordset_name", recordsetName);
             rep.saveStepAttribute(id_job, getObjectId(), "recordset", recordset); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "maxRecs", maxRecs); //$NON-NLS-1$
-            rep.saveStepAttribute(id_job, getObjectId(), "failClause", failClause); //$NON-NLS-1$
+            //rep.saveStepAttribute(id_job, getObjectId(), "failClause", failClause); //$NON-NLS-1$
+            rep.saveStepAttribute(id_job, getObjectId(), "errorCode", errorCode); //$NON-NLS-1$
+            rep.saveStepAttribute(id_job, getObjectId(), "errorMessage", errorMessage); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "keyed", keyed); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "count", count); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "skip", skip); //$NON-NLS-1$
