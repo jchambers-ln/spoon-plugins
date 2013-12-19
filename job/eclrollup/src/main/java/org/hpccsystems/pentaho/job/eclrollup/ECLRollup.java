@@ -7,11 +7,14 @@ package org.hpccsystems.pentaho.job.eclrollup;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.hpccsystems.javaecl.Rollup;
 //import org.hpccsystems.recordlayout.RecordBO;
 //import org.hpccsystems.recordlayout.RecordList;
 import org.hpccsystems.mapper.MapperBO;
 import org.hpccsystems.mapper.MapperRecordList;
+import org.hpccsystems.recordlayout.RecordBO;
+import org.hpccsystems.recordlayout.RecordList;
 import org.pentaho.di.cluster.SlaveServer;
 import org.pentaho.di.compatibility.Value;
 import org.pentaho.di.core.Const;
@@ -45,12 +48,23 @@ public class ECLRollup extends ECLJobEntry{
     private String condition = "";
     private String transformName = "";
    // private String transform = "";
-    private String fieldlist = "";
+    //private String fieldlist = "";
     private String group = "";
     private Boolean runLocal = false;//optional
     
+    private RecordList recordList = new RecordList();
+    
+    
     private MapperRecordList mapperRecList = new MapperRecordList();
 
+    public RecordList getRecordList() {
+		return recordList;
+	}
+
+	public void setRecordList(RecordList recordList) {
+		this.recordList = recordList;
+	}
+	
     public MapperRecordList getMapperRecList() {
 		return mapperRecList;
 	}
@@ -91,14 +105,14 @@ public class ECLRollup extends ECLJobEntry{
         this.condition = condition;
     }
 
-    public String getFieldlist() {
+   /* public String getFieldlist() {
         return fieldlist;
     }
 
     public void setFieldlist(String fieldlist) {
         this.fieldlist = fieldlist;
     }
-
+*/
     public String getRecordset() {
         return recordset;
     }
@@ -136,7 +150,28 @@ public class ECLRollup extends ECLJobEntry{
         }
     }
 
-
+    public String recordListToECL(){
+        String out = "";
+        
+        if(recordList != null){
+            if(recordList.getRecords() != null && recordList.getRecords().size() > 0) {
+                   
+                    for (Iterator<RecordBO> iterator = recordList.getRecords().iterator(); iterator.hasNext();) {
+                            RecordBO record = (RecordBO) iterator.next();
+                        	System.out.println("record.getSortOrder()----------------------" + record.getSortOrder());
+                            if(!out.equals("")){
+                            	out += ",";
+                            }
+                           
+                            out += record.getColumnName();
+                            
+                            
+                    }
+            }
+        }
+        
+        return out;
+    }
 
     @Override
     public Result execute(Result prevResult, int k) throws KettleException {
@@ -152,7 +187,7 @@ public class ECLRollup extends ECLJobEntry{
         rollup.setRunLocal(this.getRunLocal());
         
         rollup.setCondition(this.getCondition());
-        rollup.setFieldlist(this.getFieldlist());
+        rollup.setFieldlist(this.recordListToECL());
         
         if(this.group.equalsIgnoreCase("yes")){
         	rollup.setGroup("GROUP");
@@ -280,8 +315,8 @@ public class ECLRollup extends ECLJobEntry{
                 this.setTransformName(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"transformName")));
             //if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"transform")) != null)
             //    this.setTransform(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"transform")));
-            if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"fieldlist")) != null)
-                this.setFieldlist(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"fieldlist")));
+          //  if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"fieldlist")) != null)
+           //     this.setFieldlist(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"fieldlist")));
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"group")) != null)
                 this.setGroup(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"group")));
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"runLocal")) != null)
@@ -290,7 +325,9 @@ public class ECLRollup extends ECLJobEntry{
             
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "mapperRecList")) != null)
             	openRecordListForMapper(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "mapperRecList")));
-            
+            if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "recordList")) != null)
+                openRecordList(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "recordList")));
+           
             //recordFormat
             //if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"recordFormat")) != null)
             //    this.setRecordFormat(XMLHandler.getNodeValue(XMLHandler.getSubNode(node,"recordFormat")));
@@ -309,12 +346,14 @@ public class ECLRollup extends ECLJobEntry{
         retval += "             <recordset_name eclIsDef=\"true\" eclType=\"recordset\"><![CDATA["+this.recordsetName+"]]></recordset_name>"+Const.CR;
         retval += "             <recordset><![CDATA["+this.recordset+"]]></recordset>"+Const.CR;
         retval += "             <condition><![CDATA["+this.condition+"]]></condition>"+Const.CR;
-        retval += "             <transformName eclIsDef=\"true\" eclType=\"recordset\"><![CDATA["+this.transformName+"]]></transformName>"+Const.CR;
+        retval += "             <transformName><![CDATA["+this.transformName+"]]></transformName>"+Const.CR;
         //retval += "             <transform><![CDATA["+this.transform+"]]></transform>"+Const.CR;
-        retval += "             <fieldlist><![CDATA["+this.fieldlist+"]]></fieldlist>"+Const.CR;
+     //   retval += "             <fieldlist><![CDATA["+this.fieldlist+"]]></fieldlist>"+Const.CR;
         retval += "             <group><![CDATA["+this.group+"]]></group>"+Const.CR;
         retval += "             <runLocal><![CDATA["+this.getRunLocalString()+"]]></runLocal>"+Const.CR;
         retval += "		<mapperRecList><![CDATA[" + this.saveRecordListForMapper() + "]]></mapperRecList>" + Const.CR;
+        retval += "		<recordList><![CDATA[" + this.saveRecordList() + "]]></recordList>" + Const.CR;
+
        //recordFormat
        // retval += "             <recordFormat><![CDATA["+this.getRecordFormat()+"]]></recordFormat>"+Const.CR;
        
@@ -340,14 +379,16 @@ public class ECLRollup extends ECLJobEntry{
                 transformName = rep.getStepAttributeString(id_jobentry, "transformName");
             //if(rep.getStepAttributeString(id_jobentry, "transform") != null)
             //    transform = rep.getStepAttributeString(id_jobentry, "transform");
-            if(rep.getStepAttributeString(id_jobentry, "fieldlist") != null)
-                fieldlist = rep.getStepAttributeString(id_jobentry, "fieldlist");
+           // if(rep.getStepAttributeString(id_jobentry, "fieldlist") != null)
+           //     fieldlist = rep.getStepAttributeString(id_jobentry, "fieldlist");
             if(rep.getStepAttributeString(id_jobentry, "group") != null)
                 group = rep.getStepAttributeString(id_jobentry, "group");            
             if(rep.getStepAttributeString(id_jobentry, "runLocal") != null)
                 this.setRunLocalString(rep.getStepAttributeString(id_jobentry, "runLocal"));
             if(rep.getStepAttributeString(id_jobentry, "mapperRecList") != null)
                 this.openRecordListForMapper(rep.getStepAttributeString(id_jobentry, "mapperRecList")); //$NON-NLS-1$
+            if(rep.getStepAttributeString(id_jobentry, "recordList") != null)
+                this.openRecordList(rep.getStepAttributeString(id_jobentry, "recordList")); //$NON-NLS-1$
             
             //recordFormat
            // if(rep.getStepAttributeString(id_jobentry, "recordFormat") != null)
@@ -369,10 +410,11 @@ public class ECLRollup extends ECLJobEntry{
             rep.saveStepAttribute(id_job, getObjectId(), "condition", condition);
             rep.saveStepAttribute(id_job, getObjectId(), "transformName", transformName);
             //rep.saveStepAttribute(id_job, getObjectId(), "transform", transform);
-            rep.saveStepAttribute(id_job, getObjectId(), "fieldlist", fieldlist);
+           // rep.saveStepAttribute(id_job, getObjectId(), "fieldlist", fieldlist);
             rep.saveStepAttribute(id_job, getObjectId(), "group", group);
             rep.saveStepAttribute(id_job, getObjectId(), "runLocal", this.getRunLocalString());
             rep.saveStepAttribute(id_job, getObjectId(), "mapperRecList", this.saveRecordListForMapper()); //$NON-NLS-1$
+            rep.saveStepAttribute(id_job, getObjectId(), "recordList", this.saveRecordList()); //$NON-NLS-1$
             //recordFormat
             //rep.saveStepAttribute(id_job, getObjectId(), "recordFormat", recordFormat);
             
@@ -380,6 +422,35 @@ public class ECLRollup extends ECLJobEntry{
             throw new KettleException("Unable to save info into repository" + id_job, e);
         }
     }
-
+    public String saveRecordList(){
+        String out = "";
+        ArrayList list = recordList.getRecords();
+        Iterator<RecordBO> itr = list.iterator();
+        boolean isFirst = true;
+        while(itr.hasNext()){
+            if(!isFirst){out+="|";}
+            
+            out += itr.next().toCSV();
+            isFirst = false;
+        }
+        return out;
+    }
+    
+    public void openRecordList(String in){
+        String[] strLine = in.split("[|]");
+        
+        int len = strLine.length;
+        if(len>0){
+            recordList = new RecordList();
+            //System.out.println("Open Record List");
+            for(int i =0; i<len; i++){
+                //System.out.println("++++++++++++" + strLine[i]);
+                //this.recordDef.addRecord(new RecordBO(strLine[i]));
+                RecordBO rb = new RecordBO(strLine[i]);
+                //System.out.println(rb.getColumnName());
+                recordList.addRecordBO(rb);
+            }
+        }
+    }
     
 }

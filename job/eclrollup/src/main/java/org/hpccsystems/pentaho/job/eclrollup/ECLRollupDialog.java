@@ -47,10 +47,7 @@ import org.pentaho.di.ui.core.gui.WindowProperty;
 import org.pentaho.di.ui.job.dialog.JobDialog;
 import org.pentaho.di.ui.job.entry.JobEntryDialog;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
-
 import org.hpccsystems.mapper.*;
-
-
 import org.hpccsystems.eclguifeatures.*;
 import org.hpccsystems.recordlayout.*;
 import org.hpccsystems.ecljobentrybase.*;
@@ -64,6 +61,7 @@ public class ECLRollupDialog extends ECLJobEntryDialog{
 //public class ECLRollupDialog extends ECLJobEntryDialog {
 
     private ECLRollup jobEntry;
+    private CreateTable createTableObject = new CreateTable(shell,"rollupLayout");
     
     private Text jobEntryName;
 
@@ -74,7 +72,7 @@ public class ECLRollupDialog extends ECLJobEntryDialog{
     private Text transformName;
     private Text transform;
     private Text transformCall;
-    private Text fieldlist;
+   // private Text fieldlist;
     private Combo group;
     private Combo runLocal;//optional
     
@@ -109,13 +107,13 @@ public class ECLRollupDialog extends ECLJobEntryDialog{
         this.condition = condition;
     }
 
-    public Text getFieldlist() {
-        return fieldlist;
-    }
+    //public Text getFieldlist() {
+    //    return fieldlist;
+    //}
 
-    public void setFieldlist(Text fieldlist) {
-        this.fieldlist = fieldlist;
-    }
+    //public void setFieldlist(Text fieldlist) {
+    //    this.fieldlist = fieldlist;
+    //}
 
     public Combo getGroup() {
         return group;
@@ -261,8 +259,8 @@ public class ECLRollupDialog extends ECLJobEntryDialog{
         
         //transform = buildMultiText("Transform", transformName, lsMod, middle, margin, iterateGroup);
         condition = buildText("Condtion", transformName, lsMod, middle, margin, iterateGroup);
-        fieldlist = buildMultiText("Fieldlist", condition, lsMod, middle, margin, iterateGroup);
-        group = buildCombo("Grouped", fieldlist, lsMod, middle, margin, iterateGroup,new String[]{"no", "yes"});
+        //fieldlist = buildMultiText("Fieldlist", condition, lsMod, middle, margin, iterateGroup);
+        group = buildCombo("Grouped", condition, lsMod, middle, margin, iterateGroup,new String[]{"no", "yes"});
         
         //transformCall = buildMultiText("Transform Call", group, lsMod, middle, margin, iterateGroup);
         runLocal = buildCombo("RUNLOCAL", group, lsMod, middle, margin, iterateGroup, new String[]{"false", "true"});
@@ -271,13 +269,29 @@ public class ECLRollupDialog extends ECLJobEntryDialog{
         
         //transformFormat = buildMultiText("Transform Format", parameterName, lsMod, middle, margin, distributeGroup);
         
-
+        dataset.addModifyListener(new ModifyListener(){
+            public void modifyText(ModifyEvent e){
+                System.out.println("left RS changed");
+                AutoPopulate ap = new AutoPopulate();
+                try{
+                    System.out.println("Load items for select");
+                    String[] items = ap.fieldsByDataset( dataset.getText(),jobMeta.getJobCopies());
+                    createTableObject.setFiledNameArr(items);
+                }catch (Exception ex){
+                    System.out.println("failed to load record definitions");
+                    System.out.println(ex.toString());
+                    ex.printStackTrace();
+                }
+               // leftJoinCondition.setItems(items);
+            }
+        });
         
     }
     
     
     public JobEntryInterface open() {
-    	 AutoPopulate ap = new AutoPopulate();
+    	createTableObject = new CreateTable(shell,"rollupLayout");
+    	AutoPopulate ap = new AutoPopulate();
         Shell parentShell = getParent();
         Display display = parentShell.getDisplay();
 
@@ -407,6 +421,24 @@ public class ECLRollupDialog extends ECLJobEntryDialog{
         
 		item3.setText ("Transform Format");
         item3.setControl(sc3);
+        
+        if(jobEntry.getRecordList() != null){
+            // recordList = jobEntry.getRecordList();
+         	createTableObject.setRecordList(jobEntry.getRecordList());
+             
+             if(jobEntry.getRecordList().getRecords() != null && jobEntry.getRecordList().getRecords().size() > 0) {
+                     System.out.println("Size: "+jobEntry.getRecordList().getRecords().size());
+                     for (Iterator<RecordBO> iterator = jobEntry.getRecordList().getRecords().iterator(); iterator.hasNext();) {
+                             RecordBO obj = (RecordBO) iterator.next();
+                     }
+             }
+         }
+        String[] cNames = new String[] { createTableObject.NAME_COLUMN };
+        createTableObject.setColumnNames(cNames);
+    	createTableObject.setAddButton(false);
+        createTableObject.setSelectColumns(true);
+		TabItem item2 = createTableObject.buildDefTab("Field List", tabFolder);
+		
 		
         GridLayout mapperCompLayout = new GridLayout();
         mapperCompLayout.numColumns = 1;
@@ -520,9 +552,9 @@ public class ECLRollupDialog extends ECLJobEntryDialog{
             transformName.setText(jobEntry.getTransformName());
         }
         
-        if (jobEntry.getFieldlist() != null) {
-            fieldlist.setText(jobEntry.getFieldlist());
-        }
+       // if (jobEntry.getFieldlist() != null) {
+        //    fieldlist.setText(jobEntry.getFieldlist());
+        //}
        
         if (jobEntry.getGroup() != null) {
             group.setText(jobEntry.getGroup());
@@ -718,19 +750,22 @@ public class ECLRollupDialog extends ECLJobEntryDialog{
     		isValid = false;
     		errors += "You must provide a \"Transform Name\"!\r\n";
     	}
-    	
-    	if(this.condition.getText().equals("") && this.fieldlist.getText().equals("") && this.group.getText().equals("")){
+    	boolean hasRec = false;
+    	if(createTableObject.getRecordList().getRecords() != null && createTableObject.getRecordList().getRecords().size() > 0) {
+    		hasRec = true;
+    	}
+    	if(this.condition.getText().equals("") && !hasRec && this.group.getText().equals("")){
     		//one must be set
     		isValid = false;
     		errors += "You must provide one of the following: \"Condition\", \"Fieldlist\", \"Group\"!\r\n";
     	}else{
     		//only one of the 3 should be allowed
     		boolean a = !this.condition.getText().equals("");//not empty string
-    		boolean b = !this.fieldlist.getText().equals("");
+    		boolean b = hasRec;//!this.fieldlist.getText().equals("");
     		boolean c = !(this.group.getText().equals("") || this.group.getText().equals("no"));
     		if(!((a && !b && !c) || (!a && b && !c) || (!a && !b && c))){
     			isValid = false;
-    			errors += "You must provide only one of the following: \"Condition\", \"Fieldlist\", \"Group\"!\r\n";
+    			errors += "You must provide only one of the following: \"Condition\", \"Field List\", \"Grouped\"!\r\n";
     		}
     	}
     	//TODO: update this doesn't seem to work.
@@ -768,20 +803,21 @@ public class ECLRollupDialog extends ECLJobEntryDialog{
         jobEntry.setRecordset(dataset.getText());
         jobEntry.setCondition(condition.getText());
         jobEntry.setTransformName(transformName.getText());
-        jobEntry.setFieldlist(fieldlist.getText());
+       // jobEntry.setFieldlist(fieldlist.getText());
         jobEntry.setGroup(group.getText());
         jobEntry.setRunLocalString(runLocal.getText());
         //jobEntry.setRecordFormat(recordFormat.getText());
         
        // jobEntry.setRecordList(tblOutput.getRecordList());
         jobEntry.setMapperRecList(tblMapper.getMapperRecList());
-
+        jobEntry.setRecordList(createTableObject.getRecordList());
         dispose();
     }
 
     private void cancel() {
         jobEntry.setChanged(backupChanged);
         jobEntry = null;
+        createTableObject = null;
         dispose();
     }
 }
