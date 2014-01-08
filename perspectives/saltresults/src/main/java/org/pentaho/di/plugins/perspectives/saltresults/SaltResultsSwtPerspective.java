@@ -398,7 +398,7 @@ public class SaltResultsSwtPerspective implements SpoonPerspective {
 
   public InputStream getPerspectiveIcon() {
     ClassLoader loader = getClass().getClassLoader();
-    return loader.getResourceAsStream("org/pentaho/di/plugins/perspectives/saltresults/res/blueprint.png");
+    return loader.getResourceAsStream("org/pentaho/di/plugins/perspectives/saltresults/res/eclresults.png");
   }
 
   /**

@@ -501,7 +501,7 @@ public class ECLResultsSwtPerspective implements SpoonPerspective {
 
   public InputStream getPerspectiveIcon() {
     ClassLoader loader = getClass().getClassLoader();
-    return loader.getResourceAsStream("org/pentaho/di/plugins/perspectives/eclresults/res/blueprint.png");
+    return loader.getResourceAsStream("org/pentaho/di/plugins/perspectives/eclresults/res/eclresults.png");
   }
 
   /**

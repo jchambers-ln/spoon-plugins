@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin id="ECLML_Associate"
-	iconfile="eclml.png"
+	iconfile="associate.png"
 	description="Associate"
 	tooltip="Associate" 
 	category="HPCC Systems - ML"

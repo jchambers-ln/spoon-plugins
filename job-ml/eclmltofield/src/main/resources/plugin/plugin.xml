@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin id="ECLML_ToField"
-	iconfile="eclml.png"
+	iconfile="tofield.png"
 	description="ToField"
 	tooltip="ToField" 
 	category="HPCC Systems - ML"

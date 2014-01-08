@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin id="SALTHygiene"
-	iconfile="icon.png"
+	iconfile="salthygiene.png"
 	description="Salt Hygiene"
 	tooltip="Salt Hygiene" 
 	category="HPCC Systems SALT"

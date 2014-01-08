@@ -3,7 +3,7 @@
 	iconfile="merge.png"
 	description="Merge Paths"
 	tooltip="merge" 
-	category="HPCC Systems"
+	category="xHPCC deprecated plugins"
 	classname="org.hpccsystems.pentaho.job.eclmergepaths.ECLMergePaths">
             
     <libraries>
