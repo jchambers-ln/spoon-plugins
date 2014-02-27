@@ -58,7 +58,7 @@ public class ECLGenericDialog extends ECLJobEntryDialog{//extends JobEntryDialog
         super(parent, jobEntryInt, rep, jobMeta);
         jobEntry = (ECLGeneric) jobEntryInt;
         if (this.jobEntry.getName() == null) {
-            this.jobEntry.setName("Iterate");
+            this.jobEntry.setName("Generic Code");
         }
     }
 
@@ -86,13 +86,12 @@ public class ECLGenericDialog extends ECLJobEntryDialog{//extends JobEntryDialog
 
 
         shell.setLayout(formLayout);
-        shell.setText("Iterate");
-
+       
         int middle = props.getMiddlePct();
         int margin = Const.MARGIN;
 
         shell.setLayout(formLayout);
-        shell.setText("Define an ECL Iterate");
+        shell.setText("Generic ECL Code");
 
         FormLayout groupLayout = new FormLayout();
         groupLayout.marginWidth = 10;

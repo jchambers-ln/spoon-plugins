@@ -145,13 +145,12 @@ public class ECLGlobalVariablesDialog extends ECLJobEntryDialog{//extends JobEnt
 
 
         shell.setLayout(formLayout);
-        shell.setText("Global Variables");
-
+       
         int middle = props.getMiddlePct();
         int margin = Const.MARGIN;
 
         shell.setLayout(formLayout);
-        shell.setText("Define an ECL Variables");
+        shell.setText("Global Variables - Compiler and Cluster Settings");
 
         FormLayout groupLayout = new FormLayout();
         groupLayout.marginWidth = 10;

@@ -511,10 +511,10 @@ public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog
     			isValid = false;
         		errors += "\"File Type\" is not allowed for manual entry!\r\n";
     		}
-    		if(!fields.equals("")){
-    			isValid = false;
-        		errors += "Values on the \"Fields Tab\" is not allowed for manual entry!\r\n";
-    		}
+    		//if(!fields.equals("")){
+    		//	isValid = false;
+        	//	errors += "Values on the \"Fields Tab\" is not allowed for manual entry!\r\n";
+    		//}
     	}else{
     		//using fields
     		if(this.logicalFile.getText().equals("")){
@@ -529,18 +529,20 @@ public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog
     			isValid = false;
         		errors += "\"Record Name\" is a required field!\r\n";
     		}
-    		if(fields.equals("")){
-    			isValid = false;
-        		errors += "Values on the \"Fields Tab\" is a required!\r\n";
-    		}else{
-    			//we need to validate the fields
-    			String e = jobEntry.fieldsValid(ct.getRecordList());
-    			if(!e.equals("")){
-    				errors += e;
-    				isValid = false;
-    			}
-    		}
+    		
     	}
+    	
+    	if(fields.equals("")){
+			isValid = false;
+    		errors += "Values on the \"Fields Tab\" is a required!\r\n";
+		}else{
+			//we need to validate the fields
+			String e = jobEntry.fieldsValid(ct.getRecordList());
+			if(!e.equals("")){
+				errors += e;
+				isValid = false;
+			}
+		}
     	
     	if(!isValid){
     		ErrorNotices en = new ErrorNotices();

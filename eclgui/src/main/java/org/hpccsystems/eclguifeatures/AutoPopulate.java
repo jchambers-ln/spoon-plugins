@@ -198,7 +198,19 @@ public class AutoPopulate {
     }
     
     public String[] parseAllDefinitions(List<JobEntryCopy> jobs) throws Exception{
-        return parseDefinitions(jobs,"eclIsDef","true");
+        //String datasets1[] =  parseDefinitions(jobs,"eclIsDef","true");
+        //String datasets2[] =  parseDefinitions(jobs,"eclIsGraphable","true");
+        
+        //return merge(datasets1,datasets2);
+    	return parseDefinitions(jobs,"eclIsDef","true");
+    }
+    
+    public String[] parseGraphableDefinitions(List<JobEntryCopy> jobs) throws Exception{
+    	return parseDefinitions(jobs,"eclIsGraphable","true");
+    }
+    
+    public String[] parseUnivariate(List<JobEntryCopy> jobs) throws Exception{
+    	return parseDefinitions(jobs,"eclIsUniv","true");
     }
     
     public String[] parseDatasetsRecordsets(List<JobEntryCopy> jobs) throws Exception{
@@ -1083,8 +1095,8 @@ public class AutoPopulate {
     			}
     		}
     	}
-    	//System.out.println("_______________________");
-    	//System.out.println("Multiple Line Test");
+    	System.out.println("_______________________");
+    	System.out.println("Multiple Line Test");
     	compileFlags = "-I /home/ubuntu/DeepGlance\r\n-I /ho me/ubu ntu/DeepGlance\r\n-O\r\n";
     	compileFlagsAL = ap.compileFlagsToArrayList(compileFlags);
     	

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin id="ECLML_FromField"
-	iconfile="fromfiled.png"
+	iconfile="fromfield.png"
 	description="FromField"
 	tooltip="FromField" 
 	category="HPCC Systems - ML"

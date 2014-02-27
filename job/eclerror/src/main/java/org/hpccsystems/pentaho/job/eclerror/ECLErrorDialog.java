@@ -72,7 +72,7 @@ public class ECLErrorDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
         super(parent, jobEntryInt, rep, jobMeta);
         jobEntry = (ECLError) jobEntryInt;
         if (this.jobEntry.getName() == null) {
-            this.jobEntry.setName("Execute");
+            this.jobEntry.setName("Error");
         }
         
         
@@ -117,13 +117,13 @@ public class ECLErrorDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
 
 
         shell.setLayout(formLayout);
-        shell.setText("Execute");
+        shell.setText("ECL Error");
 
         int middle = props.getMiddlePct();
         int margin = Const.MARGIN;
 
         shell.setLayout(formLayout);
-        shell.setText("ECL Execute");
+        shell.setText("ECL Error");
 
         FormLayout groupLayout = new FormLayout();
         groupLayout.marginWidth = 10;

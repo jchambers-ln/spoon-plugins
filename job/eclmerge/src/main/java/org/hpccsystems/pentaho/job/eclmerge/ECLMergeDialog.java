@@ -41,7 +41,7 @@ public class ECLMergeDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
 	private Text jobEntryName;
 	
 	private Text recordsetName;
-	private Combo recordsetSet;
+	//private Combo recordsetSet;
 	private Text recordsetList;
 	private Text fieldList;
 	private Combo dedup;
@@ -134,9 +134,9 @@ public class ECLMergeDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
         
         
         recordsetName = buildText("Result Recordset", null, lsMod, middle, margin, mergeGroup);
-        this.recordsetSet = buildCombo("Left Recordset Name", recordsetName, lsMod, middle, margin, mergeGroup,datasets);
+        //this.recordsetSet = buildCombo("Left Recordset Name", recordsetName, lsMod, middle, margin, mergeGroup,datasets);
         //recordsetSet = buildText("Recordset Set", recordsetName, lsMod, middle, margin, mergeGroup);
-        recordsetList = buildText("Recordset List", recordsetSet, lsMod, middle, margin, mergeGroup);
+        recordsetList = buildText("Recordset List", recordsetName, lsMod, middle, margin, mergeGroup);
        	fieldList = buildText("Field List", recordsetList, lsMod, middle, margin, mergeGroup);
        	dedup = buildCombo("DEDUP", fieldList, lsMod, middle, margin, mergeGroup, new String[] {"false","true"});
        	runLocal = buildCombo("LOCAL", dedup, lsMod, middle, margin, mergeGroup, new String[] {"false","true"});
@@ -186,9 +186,9 @@ public class ECLMergeDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
         if (jobEntry.getRecordsetName() != null) {
         	recordsetName.setText(jobEntry.getRecordsetName());
         }
-        if (jobEntry.getRecordsetSet() != null) {
-            recordsetSet.setText(jobEntry.getRecordsetSet());
-        }
+       // if (jobEntry.getRecordsetSet() != null) {
+       //     recordsetSet.setText(jobEntry.getRecordsetSet());
+       // }
          if (jobEntry.getRecordsetList() != null) {
             recordsetList.setText(jobEntry.getRecordsetList());
         }
@@ -255,7 +255,7 @@ public class ECLMergeDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
         jobEntry.setName(jobEntryName.getText());
         
         jobEntry.setRecordsetName(recordsetName.getText());
-        jobEntry.setRecordsetSet(recordsetSet.getText());
+        //jobEntry.setRecordsetSet(recordsetSet.getText());
         jobEntry.setRecordsetList(recordsetList.getText());
         jobEntry.setFieldList(fieldList.getText());
         jobEntry.setDedupString(dedup.getText());
