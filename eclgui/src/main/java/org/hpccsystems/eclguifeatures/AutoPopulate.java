@@ -198,7 +198,15 @@ public class AutoPopulate {
     }
     
     public String[] parseAllDefinitions(List<JobEntryCopy> jobs) throws Exception{
-        return parseDefinitions(jobs,"eclIsDef","true");
+    	return parseDefinitions(jobs,"eclIsDef","true");
+    }
+    
+    public String[] parseGraphableDefinitions(List<JobEntryCopy> jobs) throws Exception{
+    	return parseDefinitions(jobs,"eclIsGraphable","true");
+    }
+    
+    public String[] parseUnivariate(List<JobEntryCopy> jobs) throws Exception{
+    	return parseDefinitions(jobs,"eclIsUniv","true");
     }
     
     public String[] parseDatasetsRecordsets(List<JobEntryCopy> jobs) throws Exception{
