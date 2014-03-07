@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.viewers.TableViewer;
@@ -51,6 +52,7 @@ public class MainMapper {
 	private MapperRecordList mapperRecList = new MapperRecordList();	
 	//private Text txtVariableName;
 	private Combo cmbVariableName;
+	
 	private Text txtExpression;
 	
 	private Button btnSaveExpression;
@@ -60,6 +62,33 @@ public class MainMapper {
 	private String[] operatorList = null;
 	private String[] cmbListValues = null;
 	private Tree treeInputDataSet = null;
+	
+	//Added for modifying Filter plugin start
+	private Combo cmbOperators;
+	private Combo cmbBooleanOperators;
+	private Combo cmbCol;
+	private Combo cmbOperators1;
+	private Combo cmbBooleanOperators1;
+	private Combo cmbCol1;
+	private Combo cmbOperators2;
+	private Combo cmbBooleanOperators2;
+	private Combo cmbCol2;
+	private Combo cmbOperators3;
+	private Combo cmbCol3;
+	
+	private Button add;
+	private Button add1;
+	private Button add2;
+	private Button add3;
+	
+	private String[] operatorsList = new String[]{":=","+", "-", "*", "/", "%", "||", "(", ")", "=", "<>", ">", "<", "<=", ">=","~"};
+	private String[] booleanOperatorsList = new String[]{"AND","IN","NOT","OR","XOR"};
+	
+	private Text txtValue;
+	private Text txtValue1;
+	private Text txtValue2;
+	private Text txtValue3;
+	//Added for modifying Filter plugin end
 	
 	//Fields to check for EDIT status
 	private String oldexpression = "";
@@ -497,7 +526,7 @@ public class MainMapper {
 		Composite compVariable = new Composite(group1, SWT.NONE);
 		layout = new GridLayout();
 		layout.numColumns = 2;
-		data = new GridData();
+		data = new GridData(); 
 		data.horizontalSpan = 2;
 		compVariable.setLayout(layout);
 		compVariable.setLayoutData(data);
@@ -537,60 +566,106 @@ public class MainMapper {
 		
 		Composite compTreePanel = new Composite(group1, SWT.NONE);
 		layout = new GridLayout();
-		layout.numColumns = 3;
+		if(group1.getText().equals("Filter Builder")){
+			layout.numColumns = 4;
+		}else{
+			layout.numColumns = 3;
+		}
 		data = new GridData(GridData.FILL_HORIZONTAL);
 		data.horizontalSpan = 2;
 		compTreePanel.setLayout(layout);
 		compTreePanel.setLayoutData(data);
 		
-		Label lblInput = new Label(compTreePanel, SWT.NONE);
-		if(this.layoutStyle.equalsIgnoreCase("transform")){
-			lblInput.setText("Input:");
-		}else{
-			lblInput.setText("Columns:");
+		//Added for modifying Filter plugin 
+		if(!(group1.getText().equals("Filter Builder"))){
+			Label lblInput = new Label(compTreePanel, SWT.NONE);
+			if(this.layoutStyle.equalsIgnoreCase("transform")){
+				lblInput.setText("Input:");
+			}else{
+				lblInput.setText("Columns:");
+			}
+			
+			gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
+			lblInput.setLayoutData(gridData);
+			
+			Label lblFunctions = new Label(compTreePanel, SWT.NONE);
+			lblFunctions.setText("Functions:");
+			gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
+			lblFunctions.setLayoutData(gridData);
+			
+			Label lblOperators = new Label(compTreePanel, SWT.NONE);
+			lblOperators.setText("Operators:");
+			gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
+			lblOperators.setLayoutData(gridData);
 		}
 		
-		gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
-		lblInput.setLayoutData(gridData);
-		
-		Label lblFunctions = new Label(compTreePanel, SWT.NONE);
-		lblFunctions.setText("Functions:");
-		gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
-		lblFunctions.setLayoutData(gridData);
-		
-		Label lblOperators = new Label(compTreePanel, SWT.NONE);
-		lblOperators.setText("Operators:");
-		gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
-		lblOperators.setLayoutData(gridData);
-
-		treeInputDataSet = new Tree(compTreePanel, SWT.SINGLE | SWT.BORDER);
-		
-		gridData = new GridData(GridData.FILL_HORIZONTAL);
-	    gridData.heightHint = 100;
-	    treeInputDataSet.setLayoutData(gridData);
-	    boolean includeInput = false;
-	    if(this.layoutStyle.equalsIgnoreCase("transform")){
-	    	includeInput = true;
-	    }
-	    Utils.fillTree(treeInputDataSet, mapDataSets, includeInput); //Get the values from the HashMap passed as an argument
-	    treeInputDataSet.addMouseListener(new MouseListener() {
+		if(!(group1.getText().equals("Filter Builder"))){
+			treeInputDataSet = new Tree(compTreePanel, SWT.SINGLE | SWT.BORDER);
 			
-			@Override
-			public void mouseUp(MouseEvent arg0) {
-				//Do Nothing
-			}
-			
-			@Override
-			public void mouseDown(MouseEvent arg0) {
-				//Do Nothing
-			}
-			
-			@Override
-			public void mouseDoubleClick(MouseEvent e) {
-				Tree selectedTree = (Tree)e.widget;
-				if(selectedTree.getSelection()[0].getParentItem() != null){
-					String dataField = ((Tree)e.widget).getSelection()[0].getText();
-					if(txtExpression.getCaretPosition() > 0) {
+			gridData = new GridData(GridData.FILL_HORIZONTAL);
+		    gridData.heightHint = 100;
+		    treeInputDataSet.setLayoutData(gridData);
+		    boolean includeInput = false;
+		    if(this.layoutStyle.equalsIgnoreCase("transform")){
+		    	includeInput = true;
+		    }
+		    Utils.fillTree(treeInputDataSet, mapDataSets, includeInput); //Get the values from the HashMap passed as an argument
+		    treeInputDataSet.addMouseListener(new MouseListener() {
+				
+				@Override
+				public void mouseUp(MouseEvent arg0) {
+					//Do Nothing
+				}
+				
+				@Override
+				public void mouseDown(MouseEvent arg0) {
+					//Do Nothing
+				}
+				
+				@Override
+				public void mouseDoubleClick(MouseEvent e) {
+					Tree selectedTree = (Tree)e.widget;
+					if(selectedTree.getSelection()[0].getParentItem() != null){
+						String dataField = ((Tree)e.widget).getSelection()[0].getText();
+						if(txtExpression.getCaretPosition() > 0) {
+							StringBuffer buf = new StringBuffer(txtExpression.getText());
+							buf.insert(txtExpression.getCaretPosition(), dataField);
+							txtExpression.setText(buf.toString());
+						} else {
+							StringBuffer buf = new StringBuffer(txtExpression.getText());
+							buf.append(dataField);
+							txtExpression.setText(buf.toString());
+						}
+					}
+				}
+			});
+		}
+		
+		//Added for modifying Filter plugin Start
+	    if(group1.getText().equals("Filter Builder")){
+	    	Composite compVar0 = new Composite(group1, SWT.NONE);
+			layout = new GridLayout();
+			layout.numColumns = 4;
+			data = new GridData();
+			data.horizontalSpan = 2;
+			compVar0.setLayout(layout);
+			compVar0.setLayoutData(data);
+	    	//Columns Combo start
+	    	String[] col = null;
+	    	for (Map.Entry<String, String[]> entry : mapDataSets.entrySet()) {
+	    		String key = entry.getKey();
+	    		col = entry.getValue();
+	    	}
+	    	cmbCol = new Combo(compVar0, SWT.DROP_DOWN);
+		    gridData = new GridData (GridData.FILL_HORIZONTAL);
+		    gridData.widthHint = 120;
+		    cmbCol.setLayoutData(gridData);			
+		    cmbCol.setItems(col); //Set the Combo Values
+		    cmbCol.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		StringBuffer dataField = new StringBuffer(" ( ");
+		    		dataField.append(cmbCol.getText());
+		    		if(txtExpression.getCaretPosition() > 0) {
 						StringBuffer buf = new StringBuffer(txtExpression.getText());
 						buf.insert(txtExpression.getCaretPosition(), dataField);
 						txtExpression.setText(buf.toString());
@@ -599,10 +674,379 @@ public class MainMapper {
 						buf.append(dataField);
 						txtExpression.setText(buf.toString());
 					}
-				}
-			}
-		});
-		
+		    	}
+			});
+		    //Columns Combo end
+		    
+		    //Operators Combo start
+		    cmbOperators = new Combo(compVar0, SWT.DROP_DOWN);
+		    gridData = new GridData (GridData.FILL_HORIZONTAL);
+		    gridData.widthHint = 80;
+		    cmbOperators.setLayoutData(gridData);			
+		    cmbOperators.setItems(operatorsList); //Set the Combo Values
+		    cmbOperators.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		String dataField = cmbOperators.getText();
+		    		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						txtExpression.setText(buf.toString());
+					}
+		    	}
+			});
+		    //Operators Combo end
+		    
+		    txtValue = new Text(compVar0, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+			gridData = new GridData (GridData.FILL_BOTH);
+			gridData.widthHint = 160;
+			txtValue.setLayoutData(gridData);
+			
+			add = new Button(compVar0, SWT.PUSH);
+	        add.setText("Add");
+	        add.addSelectionListener(new SelectionAdapter() {
+	        	 @Override
+	        	  public void widgetSelected(SelectionEvent e) {
+	        		String dataField = txtValue.getText();
+	        		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						buf.append(" ) ");
+						txtExpression.setText(buf.toString());
+					}
+	        	  }
+	        });
+	        
+			//Boolean operators Combo start
+			cmbBooleanOperators = new Combo(compVar0, SWT.DROP_DOWN);
+			gridData = new GridData (GridData.FILL_HORIZONTAL);
+			gridData.widthHint = 80;
+			cmbBooleanOperators.setLayoutData(gridData);			
+			cmbBooleanOperators.setItems(booleanOperatorsList);
+			cmbBooleanOperators.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		String dataField = cmbBooleanOperators.getText();
+		    		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						txtExpression.setText(buf.toString());
+					}
+		    		
+		    	} 
+			});
+			//Boolean operators Combo end
+	   }
+	    
+	    if(group1.getText().equals("Filter Builder")){
+	    	Composite compVar = new Composite(group1, SWT.NONE);
+			layout = new GridLayout();
+			layout.numColumns = 4;
+			data = new GridData();
+			data.horizontalSpan = 2;
+			compVar.setLayout(layout);
+			compVar.setLayoutData(data);
+	    	//Columns Combo start
+	    	String[] col1 = null;
+	    	for (Map.Entry<String, String[]> entry : mapDataSets.entrySet()) {
+	    		String key = entry.getKey();
+	    		col1 = entry.getValue();
+	    	}
+	    	cmbCol1 = new Combo(compVar, SWT.DROP_DOWN);
+		    gridData = new GridData (GridData.FILL_HORIZONTAL);
+		    gridData.widthHint = 120;
+		    cmbCol1.setLayoutData(gridData);			
+		    cmbCol1.setItems(col1); //Set the Combo Values
+		    cmbCol1.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		StringBuffer dataField = new StringBuffer(" ( ");
+		    		dataField.append(cmbCol1.getText());
+		    		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						txtExpression.setText(buf.toString());
+					}
+		    	}
+			});
+		    //Columns Combo end
+		    
+		    //Operators Combo start
+		    cmbOperators1 = new Combo(compVar, SWT.DROP_DOWN);
+		    gridData = new GridData (GridData.FILL_HORIZONTAL);
+		    gridData.widthHint = 80;
+		    cmbOperators1.setLayoutData(gridData);			
+		    cmbOperators1.setItems(operatorsList); //Set the Combo Values
+		    cmbOperators1.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		String dataField = cmbOperators1.getText();
+		    		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						txtExpression.setText(buf.toString());
+					}
+		    	}
+			});
+		    //Operators Combo end
+		    
+		    txtValue1 = new Text(compVar, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+			gridData = new GridData (GridData.FILL_BOTH);
+			gridData.widthHint = 160;
+			txtValue1.setLayoutData(gridData);
+			
+			add1 = new Button(compVar, SWT.PUSH);
+	        add1.setText("Add");
+	        add1.addSelectionListener(new SelectionAdapter() {
+	        	 @Override
+	        	  public void widgetSelected(SelectionEvent e) {
+	        		String dataField = txtValue1.getText();
+	        		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						buf.append(" ) ");
+						txtExpression.setText(buf.toString());
+					}
+	        	  }
+	        });
+	        
+			//Boolean operators Combo start
+			cmbBooleanOperators1 = new Combo(compVar, SWT.DROP_DOWN);
+			gridData = new GridData (GridData.FILL_HORIZONTAL);
+			gridData.widthHint = 80;
+			cmbBooleanOperators1.setLayoutData(gridData);			
+			cmbBooleanOperators1.setItems(booleanOperatorsList);
+			cmbBooleanOperators1.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		String dataField = cmbBooleanOperators1.getText();
+		    		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						txtExpression.setText(buf.toString());
+					}
+		    		
+		    	} 
+			});
+			//Boolean operators Combo end
+	   }
+	   
+	    if(group1.getText().equals("Filter Builder")){
+	    	Composite compVar2 = new Composite(group1, SWT.NONE);
+			layout = new GridLayout();
+			layout.numColumns = 4;
+			data = new GridData();
+			data.horizontalSpan = 2;
+			compVar2.setLayout(layout);
+			compVar2.setLayoutData(data);
+	    	//Columns Combo start
+	    	String[] col2 = null;
+	    	for (Map.Entry<String, String[]> entry : mapDataSets.entrySet()) {
+	    		String key = entry.getKey();
+	    		col2 = entry.getValue();
+	    	}
+	    	cmbCol2 = new Combo(compVar2, SWT.DROP_DOWN);
+		    gridData = new GridData (GridData.FILL_HORIZONTAL);
+		    gridData.widthHint = 120;
+		    cmbCol2.setLayoutData(gridData);			
+		    cmbCol2.setItems(col2); //Set the Combo Values
+		    cmbCol2.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		StringBuffer dataField = new StringBuffer(" ( ");
+		    		dataField.append(cmbCol2.getText());
+		    		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						txtExpression.setText(buf.toString());
+					}
+		    	}
+			});
+		    //Columns Combo end
+		    
+		    //Operators Combo start
+		    cmbOperators2 = new Combo(compVar2, SWT.DROP_DOWN);
+		    gridData = new GridData (GridData.FILL_HORIZONTAL);
+		    gridData.widthHint = 80;
+		    cmbOperators2.setLayoutData(gridData);			
+		    cmbOperators2.setItems(operatorsList); //Set the Combo Values
+		    cmbOperators2.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		String dataField = cmbOperators2.getText();
+		    		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						txtExpression.setText(buf.toString());
+					}
+		    	}
+			});
+		    //Operators Combo end
+		    
+		    txtValue2 = new Text(compVar2, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+			gridData = new GridData (GridData.FILL_BOTH);
+			gridData.widthHint = 160;
+			txtValue2.setLayoutData(gridData);
+			
+			add2 = new Button(compVar2, SWT.PUSH);
+	        add2.setText("Add");
+	        add2.addSelectionListener(new SelectionAdapter() {
+	        	 @Override
+	        	  public void widgetSelected(SelectionEvent e) {
+	        		String dataField = txtValue2.getText();
+	        		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						buf.append(" ) ");
+						txtExpression.setText(buf.toString());
+					}
+	        	  }
+	        });
+	        
+			//Boolean operators Combo start
+			cmbBooleanOperators2 = new Combo(compVar2, SWT.DROP_DOWN);
+			gridData = new GridData (GridData.FILL_HORIZONTAL);
+			gridData.widthHint = 80;
+			cmbBooleanOperators2.setLayoutData(gridData);			
+			cmbBooleanOperators2.setItems(booleanOperatorsList);
+			cmbBooleanOperators2.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		String dataField = cmbBooleanOperators2.getText();
+		    		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						txtExpression.setText(buf.toString());
+					}
+		    		
+		    	} 
+			});
+			//Boolean operators Combo end
+	   }
+	   
+	    if(group1.getText().equals("Filter Builder")){
+	    	Composite compVar3 = new Composite(group1, SWT.NONE);
+			layout = new GridLayout();
+			layout.numColumns = 4;
+			data = new GridData();
+			data.horizontalSpan = 2;
+			compVar3.setLayout(layout);
+			compVar3.setLayoutData(data);
+	    	//Columns Combo start
+	    	String[] col3 = null;
+	    	for (Map.Entry<String, String[]> entry : mapDataSets.entrySet()) {
+	    		String key = entry.getKey();
+	    		col3 = entry.getValue();
+	    	}
+	    	cmbCol3 = new Combo(compVar3, SWT.DROP_DOWN);
+		    gridData = new GridData (GridData.FILL_HORIZONTAL);
+		    gridData.widthHint = 120;
+		    cmbCol3.setLayoutData(gridData);			
+		    cmbCol3.setItems(col3); //Set the Combo Values
+		    cmbCol3.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		StringBuffer dataField = new StringBuffer(" ( ");
+		    		dataField.append(cmbCol3.getText());
+		    		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						txtExpression.setText(buf.toString());
+					}
+		    	}
+			});
+		    //Columns Combo end
+		    
+		    //Operators Combo start
+		    cmbOperators3 = new Combo(compVar3, SWT.DROP_DOWN);
+		    gridData = new GridData (GridData.FILL_HORIZONTAL);
+		    gridData.widthHint = 80;
+		    cmbOperators3.setLayoutData(gridData);			
+		    cmbOperators3.setItems(operatorsList); //Set the Combo Values
+		    cmbOperators3.addSelectionListener(new SelectionAdapter() {
+		    	public void widgetSelected(SelectionEvent e) {
+		    		String dataField = cmbOperators3.getText();
+		    		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						txtExpression.setText(buf.toString());
+					}
+		    	}
+			});
+		    //Operators Combo end
+		    
+		    txtValue3 = new Text(compVar3, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+			gridData = new GridData (GridData.FILL_BOTH);
+			gridData.widthHint = 160;
+			txtValue3.setLayoutData(gridData);
+			
+			add3 = new Button(compVar3, SWT.PUSH);
+	        add3.setText("Add");
+	        add3.addSelectionListener(new SelectionAdapter() {
+	        	 @Override
+	        	  public void widgetSelected(SelectionEvent e) {
+	        		String dataField = txtValue3.getText();
+	        		if(txtExpression.getCaretPosition() > 0) {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.insert(txtExpression.getCaretPosition(), dataField);
+						txtExpression.setText(buf.toString());
+					} else {
+						StringBuffer buf = new StringBuffer(txtExpression.getText());
+						buf.append(dataField);
+						buf.append(" ) ");
+						txtExpression.setText(buf.toString());
+					}
+	        	  }
+	        });
+	        
+	   }  
+	  //Added for modifying Filter plugin end
+	    
+	    //Added for modifying Filter plugin 
+	    if(!(group1.getText().equals("Filter Builder"))){
 	    final Tree treeFunctions = new Tree(compTreePanel, SWT.SINGLE | SWT.BORDER);
 	    gridData = new GridData(GridData.FILL_HORIZONTAL);
 	    gridData.heightHint = 100;
@@ -644,6 +1088,7 @@ public class MainMapper {
 				}
 			}
 		});
+	    
 	    
 	    final ToolTip functionsTip = new ToolTip(compTreePanel.getShell(), SWT.BALLOON | SWT.ICON_INFORMATION);
 	    BuildHelpIndex bhi = new BuildHelpIndex();
@@ -746,10 +1191,11 @@ public class MainMapper {
 				}
 			}};
 			treeFunctions.addListener(SWT.KeyDown, functionsList);
-			//treeFunctions.addListener(SWT.MouseHover, functionsList);
+	    }//treeFunctions.addListener(SWT.MouseHover, functionsList);
 			//treeFunctions.addListener(SWT.MouseMove, functionsList);
 			//treeFunctions.addListener(SWT.MouseExit, functionsList);
 	    
+	    if(!(group1.getText().equals("Filter Builder"))){  
 	    int style = SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL;
 	    final Table tblOperators = new Table(compTreePanel, style);
 		gridData = new GridData();
@@ -788,6 +1234,8 @@ public class MainMapper {
 				}
 			}
 		});
+	    }
+	  //Added for modifying Filter plugin 
 		
 		Label lblEclText = new Label(group1, SWT.NONE);
 		if(this.layoutStyle.equalsIgnoreCase("transform")){
@@ -802,6 +1250,7 @@ public class MainMapper {
 		txtExpression = new Text(group1, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		gridData = new GridData (GridData.FILL_BOTH);
 		gridData.horizontalSpan = 2;
+		gridData.heightHint = 20;
 		txtExpression.setLayoutData(gridData);
 		txtExpression.setText(filterStatement);
 		
@@ -810,7 +1259,7 @@ public class MainMapper {
 		layout.numColumns = 3;
 		data = new GridData();
 		compButton.setLayout(layout);
-		compButton.setLayoutData(data);
+		compButton.setLayoutData(data); 
 		
 		
 		btnSaveExpression = new Button(compButton, SWT.PUSH | SWT.CENTER);
