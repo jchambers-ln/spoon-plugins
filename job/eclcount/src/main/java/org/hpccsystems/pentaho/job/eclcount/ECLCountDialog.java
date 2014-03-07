@@ -130,7 +130,7 @@ public class ECLCountDialog extends ECLJobEntryDialog{//JobEntryDialog implement
         //Distribute Declaration
         Group countGroup = new Group(shell, SWT.SHADOW_NONE);
         props.setLook(countGroup);
-        countGroup.setText("Distribute Details");
+        countGroup.setText("Count Details");
         countGroup.setLayout(groupLayout);
         FormData datasetGroupFormat = new FormData();
         datasetGroupFormat.top = new FormAttachment(generalGroup, margin);

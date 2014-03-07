@@ -155,8 +155,8 @@ public class ECLDeSprayDialog extends ECLJobEntryDialog{//extends JobEntryDialog
         timeout = buildText("Timeout", destinationPath, lsMod, middle, margin, desprayGroup);
         espserverISPport = buildText("ESP Server ISP Port", timeout, lsMod, middle, margin, desprayGroup);
         //shoudl put a lable here with
-        //protocal://IP:port/path
-        Label espHelp = this.buildLabel("protocal://IP:port/path", espserverISPport, lsMod, middle, margin, desprayGroup);
+        //protocol://IP:port/path
+        Label espHelp = this.buildLabel("protocol://IP:port/path", espserverISPport, lsMod, middle, margin, desprayGroup);
         maxConnections = buildText("Max Connections", espHelp, lsMod, middle, margin, desprayGroup);
         allowOverwrite = buildCombo("Allow Overwrite", maxConnections, lsMod, middle, margin, desprayGroup,new String[]{"false", "true"});
      
