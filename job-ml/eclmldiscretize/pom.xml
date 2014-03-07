@@ -13,7 +13,7 @@
     </parent>
 
     <properties>
-        <iconfile>eclml.png</iconfile>
+        <iconfile>discretize.png</iconfile>
     </properties>
     
 	<build>

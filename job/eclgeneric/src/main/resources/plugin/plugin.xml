@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin id="ECLGeneric"
-	iconfile="eclgeneric.png"
+	iconfile="generic.png"
 	description="Generic Code"
 	tooltip="Generic code input" 
 	category="HPCC Systems"

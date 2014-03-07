@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin id="ECLGlobalVariables"
-	iconfile="vars.png"
+	iconfile="globalvariables.png"
 	description="Global Variables"
 	tooltip="Global Variables" 
 	category="HPCC Systems"

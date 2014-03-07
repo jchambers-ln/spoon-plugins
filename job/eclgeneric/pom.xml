@@ -13,7 +13,7 @@
     </parent>
 
     <properties>
-        <iconfile>eclgeneric.png</iconfile>
+        <iconfile>generic.png</iconfile>
     </properties>
     
 	<build>

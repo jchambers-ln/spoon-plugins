@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin id="SALTInternalLinking"
-	iconfile="icon.png"
+	iconfile="saltinternallinking.png"
 	description="Salt Internal Linking"
 	tooltip="Salt Internal Linking" 
 	category="HPCC Systems SALT"

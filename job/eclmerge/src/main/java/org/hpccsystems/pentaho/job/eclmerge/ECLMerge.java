@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hpccsystems.javaecl.Merge;
+import org.hpccsystems.recordlayout.RecordList;
 import org.pentaho.di.cluster.SlaveServer;
 import org.pentaho.di.compatibility.Value;
 import org.pentaho.di.core.Const;
@@ -29,6 +30,9 @@ public class ECLMerge extends ECLJobEntry{//extends JobEntryBase implements Clon
 	private String fieldList;
 	private Boolean dedup = false;
 	private Boolean runLocal = false;
+	
+	private RecordList recordList = new RecordList();
+	    
 	
 	public String getResult() {
 		return result;

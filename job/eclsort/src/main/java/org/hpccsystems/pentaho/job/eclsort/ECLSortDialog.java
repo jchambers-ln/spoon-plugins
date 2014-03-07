@@ -80,6 +80,7 @@ public class ECLSortDialog extends ECLJobEntryDialog{//extends JobEntryDialog im
 
     
     public JobEntryInterface open() {
+    	createTableObject = new CreateTable(shell,"sortLayout");
         Shell parentShell = getParent();
         Display display = parentShell.getDisplay();
         String datasets[] = null;

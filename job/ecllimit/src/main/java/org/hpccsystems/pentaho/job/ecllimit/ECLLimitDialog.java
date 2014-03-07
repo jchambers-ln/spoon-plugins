@@ -43,11 +43,13 @@ public class ECLLimitDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
 	private Text recordsetName;
 	private Combo recordset;
 	private Text maxRecs;
-	private Text failClause;
+	//private Text failClause;
+	private Text errorMessage;
+	private Text errorCode;
 	private Combo keyed;
 	private Combo count;
 	private Combo skip;
-	private Text onFailTransform;
+	//private Text onFailTransform;
 	
 	
 	private Button wOK, wCancel;
@@ -137,11 +139,13 @@ public class ECLLimitDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
         recordsetName = buildText("Result Recordset", null, lsMod, middle, margin, limitGroup);
         recordset = buildCombo("Recordset", recordsetName, lsMod, middle, margin, limitGroup, datasets);
         maxRecs = buildText("Maximum Records", recordset, lsMod, middle, margin, limitGroup);
-       	failClause = buildText("FAIL(<clause>)", maxRecs, lsMod, middle, margin, limitGroup);
-       	keyed = buildCombo("KEYED", failClause, lsMod, middle, margin, limitGroup, new String[] {"false","true"});
+        errorMessage = buildText("Error Message", maxRecs, lsMod, middle, margin, limitGroup);
+        errorCode = buildText("Error Code", errorMessage, lsMod, middle, margin, limitGroup);
+       	//failClause = buildText("FAIL(<clause>)", maxRecs, lsMod, middle, margin, limitGroup);
+       	keyed = buildCombo("KEYED", errorCode, lsMod, middle, margin, limitGroup, new String[] {"false","true"});
        	count = buildCombo("COUNT", keyed, lsMod, middle, margin, limitGroup, new String[] {"false","true"});
        	skip = buildCombo("SKIP", count, lsMod, middle, margin, limitGroup, new String[] {"false","true"});
-       	onFailTransform = buildText("ONFAIL(<transform>)", skip, lsMod, middle, margin, limitGroup);
+      // 	onFailTransform = buildText("ONFAIL(<transform>)", skip, lsMod, middle, margin, limitGroup);
         
         wOK = new Button(shell, SWT.PUSH);
         wOK.setText("OK");
@@ -194,9 +198,16 @@ public class ECLLimitDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
          if (jobEntry.getMaxRecs() != null) {
             maxRecs.setText(jobEntry.getMaxRecs());
         }
-        if (jobEntry.getFailClause() != null) {
-            failClause.setText(jobEntry.getFailClause());
-        }
+        //if (jobEntry.getFailClause() != null) {
+        //    failClause.setText(jobEntry.getFailClause());
+        //}
+         if (jobEntry.getErrorCode() != null) {
+             errorCode.setText(jobEntry.getErrorCode());
+         }
+         if (jobEntry.getErrorMessage() != null) {
+             errorMessage.setText(jobEntry.getErrorMessage());
+         }
+         
         if (jobEntry.getKeyedString() != null) {
             keyed.setText(jobEntry.getKeyedString());
         }
@@ -206,9 +217,9 @@ public class ECLLimitDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
         if (jobEntry.getSkipString() != null) {
             skip.setText(jobEntry.getSkipString());
         }
-        if (jobEntry.getOnFailTransform() != null) {
-            onFailTransform.setText(jobEntry.getOnFailTransform());
-        }
+       // if (jobEntry.getOnFailTransform() != null) {
+       //     onFailTransform.setText(jobEntry.getOnFailTransform());
+      //  }
         
         shell.pack();
         shell.open();
@@ -239,6 +250,11 @@ public class ECLLimitDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
     		//one is required.
     		isValid = false;
     		errors += "You must provide a \"Result Recordset\"!\r\n";
+    	}
+    	if(this.recordsetName.getText().contains(" ")){
+    		//one is required.
+    		isValid = false;
+    		errors += "\"Result Recordset\" can not contain spaces!\r\n";
     	}
     	
     	if(this.recordset.getText().equals("")){
@@ -272,11 +288,13 @@ public class ECLLimitDialog extends ECLJobEntryDialog{//extends JobEntryDialog i
         jobEntry.setRecordsetName(recordsetName.getText());
         jobEntry.setRecordset(recordset.getText());
         jobEntry.setMaxRecs(maxRecs.getText());
-        jobEntry.setFailClause(failClause.getText());
+        //jobEntry.setFailClause(failClause.getText());
+        jobEntry.setErrorCode(errorCode.getText());
+        jobEntry.setErrorMessage(errorMessage.getText());
         jobEntry.setKeyedString(keyed.getText());
         jobEntry.setCountString(count.getText());
         jobEntry.setSkipString(skip.getText());
-        jobEntry.setOnFailTransform(onFailTransform.getText());
+      //  jobEntry.setOnFailTransform(onFailTransform.getText());
 
         dispose();
     }

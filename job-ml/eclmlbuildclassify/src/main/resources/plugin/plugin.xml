@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin id="ECLML_BuildClassify"
-	iconfile="eclml.png"
+	iconfile="buildclassify.png"
 	description="Classification - Learn"
 	tooltip="Classification - Learn" 
 	category="HPCC Systems - ML"

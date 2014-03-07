@@ -96,11 +96,17 @@ public class CreateTable {
 	
 	private boolean includeCopyParent = false;
 	private boolean selectColumns = false;
-	
+	private boolean isAddButton = true;
 	
 	private String[] filedNameArr = null;
 
 	
+	public boolean isAddButton() {
+		return isAddButton;
+	}
+	public void setAddButton(boolean isAddButton) {
+		this.isAddButton = isAddButton;
+	}
 	public String[] getFiledNameArr() {
 		return filedNameArr;
 	}
@@ -812,6 +818,7 @@ public class CreateTable {
 		
 		// Create and configure the "Add" button
 		//if(!this.selectColumns){//decided to keep the add button in all cases if user prefers this use case
+		if(this.isAddButton){
 			Button add = new Button(parent, SWT.PUSH | SWT.CENTER);
 			add.setText("Add");
 			
@@ -825,12 +832,14 @@ public class CreateTable {
 	                                table.redraw();
 				}
 			});
+		}
 		//}
 		
 		if(this.selectColumns){
 			Button selCol = new Button(parent, SWT.PUSH | SWT.CENTER);
 			selCol.setText("Select Columns");
-			
+			gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
+			gridData.widthHint = 120; 
 			
 			selCol.setLayoutData(gridData);
 			selCol.addSelectionListener(new SelectionAdapter() {
@@ -976,7 +985,7 @@ public class CreateTable {
 		btnRowDown.setImage(RecordLabels.getImage("downArrow"));
 		btnRowDown.setText("Move Down");
 		gridData = new GridData (GridData.HORIZONTAL_ALIGN_BEGINNING);
-		gridData.widthHint = 90;
+		gridData.widthHint = 100;
 		btnRowDown.setLayoutData(gridData); 
 
 		btnRowDown.addSelectionListener(new SelectionAdapter() {

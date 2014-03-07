@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin id="SALTSpecificity"
-	iconfile="icon.png"
+	iconfile="saltspecificity.png"
 	description="Salt Specificity"
 	tooltip="Salt Specificity" 
 	category="HPCC Systems SALT"

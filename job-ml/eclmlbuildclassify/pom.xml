@@ -13,7 +13,7 @@
     </parent>
 
     <properties>
-        <iconfile>eclml.png</iconfile>
+        <iconfile>buildclassify.png</iconfile>
     </properties>
     
 	<build>

@@ -13,7 +13,7 @@
 	</parent>
 
     <properties>
-        <iconfile>icon.png</iconfile>
+        <iconfile>saltconcepts.png</iconfile>
     </properties>
     
 	<build>
