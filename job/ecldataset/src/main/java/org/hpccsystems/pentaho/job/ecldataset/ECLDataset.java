@@ -43,13 +43,14 @@ public class ECLDataset extends ECLJobEntry{//extends JobEntryBase implements Cl
     private String recordDef = "";
     private String recordSet = "";
     private String fileType = "";
-    
+    private String xml = "";
     private RecordList recordList = new RecordList();
     
     private String hasHeaderRow = "No";
     private String csvSeparator = "";
     private String csvTerminator = "";
     private String csvQuote = "";
+    
 
     public RecordList getRecordList() {
         return recordList;
@@ -73,6 +74,14 @@ public class ECLDataset extends ECLJobEntry{//extends JobEntryBase implements Cl
 
     public void setDatasetName(String datasetName) {
         this.datasetName = datasetName;
+    }
+
+    public String getXml() {
+        return xml;
+    }
+
+    public void setXml(String xml) {
+        this.xml = xml;
     }
 
     public String getLogicalFileName() {
@@ -346,7 +355,8 @@ public class ECLDataset extends ECLJobEntry{//extends JobEntryBase implements Cl
             
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "fileType")) != null)
                 setFileType(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "fileType")));
-            
+            if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "xml")) != null)
+                setXml(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "xml")));
             
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "csvSeparator")) != null)
                 setCsvSeparator(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "csvSeparator")));
@@ -354,7 +364,6 @@ public class ECLDataset extends ECLJobEntry{//extends JobEntryBase implements Cl
                 setCsvTerminator(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "csvTerminator")));
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "csvQuote")) != null)
                 setCsvQuote(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "csvQuote")));
-            
             
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "hasHeaderRow")) != null)
                 setHasHeaderRow(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "hasHeaderRow")));
@@ -377,7 +386,7 @@ public class ECLDataset extends ECLJobEntry{//extends JobEntryBase implements Cl
         retval += "		<recordSet><![CDATA[" + recordSet + "]]></recordSet>" + Const.CR;
         retval += "		<recordList><![CDATA[" + this.saveRecordList() + "]]></recordList>" + Const.CR;
         retval += "		<fileType><![CDATA[" + fileType + "]]></fileType>" + Const.CR;
-
+        retval += "		<xml><![CDATA[" + xml + "]]></xml>" + Const.CR;
         retval += "		<csvSeparator><![CDATA[" + csvSeparator + "]]></csvSeparator>" + Const.CR;
         retval += "		<csvTerminator><![CDATA[" + csvTerminator + "]]></csvTerminator>" + Const.CR;
         retval += "		<csvQuote><![CDATA[" + csvQuote + "]]></csvQuote>" + Const.CR;
@@ -407,8 +416,8 @@ public class ECLDataset extends ECLJobEntry{//extends JobEntryBase implements Cl
              
              if(rep.getStepAttributeString(id_jobentry, "fileType") != null)
                 fileType = rep.getStepAttributeString(id_jobentry, "fileType"); //$NON-NLS-1$
-        
-
+             if(rep.getStepAttributeString(id_jobentry, "xml") != null)
+                 xml = rep.getStepAttributeString(id_jobentry, "xml"); //$NON-NLS-1$
              if(rep.getStepAttributeString(id_jobentry, "csvSeparator") != null)
             	 csvSeparator = rep.getStepAttributeString(id_jobentry, "csvSeparator"); //$NON-NLS-1$
              if(rep.getStepAttributeString(id_jobentry, "csvTerminator") != null)
@@ -433,7 +442,7 @@ public class ECLDataset extends ECLJobEntry{//extends JobEntryBase implements Cl
             
             rep.saveStepAttribute(id_job, getObjectId(), "recordList", this.saveRecordList()); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "fileType", fileType); //$NON-NLS-1$
-            
+            rep.saveStepAttribute(id_job, getObjectId(), "xml", xml); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "csvSeparator", csvSeparator); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "csvTerminator", csvTerminator); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "csvQuote", csvQuote); //$NON-NLS-1$

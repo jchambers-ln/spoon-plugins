@@ -206,20 +206,17 @@ public class ECLFilter extends ECLJobEntry{//extends JobEntryBase implements Clo
         filter.setInRecordName(this.getInRecordName());
        
         filter.setFilterStatement(this.getFilterStatement());
-        
-        String ecl = filter.ecl();
 
-        logBasic("{Project Job} Execute = " + ecl);
+
+        logBasic("{Project Job} Execute = " + filter.ecl());
         //System.out.println("PROJECT JOB ---->>>> : "+project.ecl());
         
         logBasic("{Project Job} Previous =" + result.getLogText());
         
-        ecl += "OUTPUT(Filter);";
-        
         result.setResult(true);
         
         RowMetaAndData data = new RowMetaAndData();
-        data.addValue("ecl", Value.VALUE_TYPE_STRING, ecl);
+        data.addValue("ecl", Value.VALUE_TYPE_STRING, filter.ecl());
         
         
         List list = result.getRows();
