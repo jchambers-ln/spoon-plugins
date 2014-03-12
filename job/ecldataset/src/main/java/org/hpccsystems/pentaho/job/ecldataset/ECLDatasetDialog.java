@@ -9,15 +9,9 @@ import org.eclipse.swt.events.FocusListener;
 
 import java.awt.event.TextEvent;
 import java.awt.event.TextListener;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
@@ -56,13 +50,7 @@ import org.pentaho.di.ui.core.gui.WindowProperty;
 import org.pentaho.di.ui.job.dialog.JobDialog;
 import org.pentaho.di.ui.job.entry.JobEntryDialog;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
+import org.hpccsystems.javaecl.FileInfoSoap;
 import org.hpccsystems.javaecl.HPCCServerInfo;
 import org.hpccsystems.eclguifeatures.AutoPopulate;
 import org.hpccsystems.eclguifeatures.ErrorNotices;
@@ -78,9 +66,6 @@ import org.hpccsystems.ecljobentrybase.*;
 public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog implements JobEntryDialogInterface {
 
 	private String currentLogicalFile = "";
-	private Element[] eElement;
-	private ArrayList<Integer> list;
-	private String xml = "";
     private ECLDataset jobEntry;
     private Text jobEntryName;
     private Text recordName;
@@ -124,7 +109,7 @@ public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog
 
     public JobEntryInterface open() {
         Shell parentShell = getParent();
-        final Display display = parentShell.getDisplay();
+        Display display = parentShell.getDisplay();
 
         shell = new Shell(parentShell, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MIN | SWT.MAX);
         ct = new CreateTable(shell);
@@ -136,7 +121,7 @@ public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog
         data.width = 650;
         tabFolder.setLayoutData(data);
         
-        final Composite compForGrp = new Composite(tabFolder, SWT.NONE);
+        Composite compForGrp = new Composite(tabFolder, SWT.NONE);
         //compForGrp.setLayout(new FillLayout(SWT.VERTICAL));
         compForGrp.setBackground(new Color(tabFolder.getDisplay(),255,255,255));
         compForGrp.setLayout(new FormLayout());
@@ -260,18 +245,19 @@ public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog
 						currentLogicalFile = file;
 						//value has changed
 						//System.out.println("fetch field list: " + file);
-						//ArrayList<String[]> details = hsi.fetchFileDetails(file);
-						ArrayList<String[]> details = Details(file,hsi,"");
+						ArrayList<String[]> details = hsi.fetchFileDetails(file);
+						FileInfoSoap c = new FileInfoSoap(serverHost,serverPort,user,pass);
+						String format = c.getFileType(file);
+						System.out.println("Format TYPE::::::" + format);
 						if(hsi.isLogonFail){
 							ErrorNotices en = new ErrorNotices();
 							en.openSaveErrorDialog(getParent(), "Permission Denied!\r\nCan not fetch field definitions, please make sure you have permissions to that file\r\nYou should also verify your user/pass in Global Variables");
 							//en.openDialog("Permission Denied", "You either do not have permissions to access this file or your credentials for the server are wrong.", "");
 						}
-						if(details != null && details.size()>0){
+						if(!format.equalsIgnoreCase("csv") && details != null && details.size()>0){
 							ErrorNotices en = new ErrorNotices();
 							if(en.openComfirmDialog(getParent(), "Do you want to replace your current Record Structure on the\r\nFields tab with the one stored on the server?")){
 								ct.setRecordList(jobEntry.ArrayListToRecordList(details));
-								ct.createExpand(display,eElement, list);
 								ct.redrawTable(true);
 							}
 						}else{
@@ -289,8 +275,7 @@ public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog
 								}
 								
 							}
-						}						
-						
+						}
 					}
             	}else{
             		//System.out.println("No text in logica File button");
@@ -458,28 +443,19 @@ public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog
         if (jobEntry.getLogicalFileName() != null) {
         	logicalFile.setText(jobEntry.getLogicalFileName());
         }
-
         if (jobEntry.getDatasetName() != null) {
             datasetName.setText(jobEntry.getDatasetName());
         }
-        
         if (jobEntry.getRecordName() != null) {
             recordName.setText(jobEntry.getRecordName());
         }
-        
-        if (jobEntry.getXml() != null) {
-            xml = jobEntry.getXml();
-            if(!xml.equals("")){
-            	ArrayList<String[]> details = Details(logicalFile.getText(),hsi,xml);
-            	if(details != null && details.size()>0)
-            		ct.createExpand(display,eElement, list);    		
-            }            
-        }
-        
+        //if (jobEntry.getRecordDef() != null) {
+        //    recordDef.setText(jobEntry.getRecordDef());
+        //}
+        //
         if (jobEntry.getRecordSet() != null) {
             recordSet.setText(jobEntry.getRecordSet());
         }
-        
         if (jobEntry.getFileType() != null) {
             fileType.setText(jobEntry.getFileType());
         }
@@ -596,7 +572,6 @@ public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog
         //jobEntry.setCsvTerminator(csvTerminator.getText());
         //jobEntry.setCsvQuote(csvQuote.getText());
         jobEntry.setHasHeaderRow(hasHeaderRow.getText());
-        jobEntry.setXml(xml);
         dispose();
     }
 
@@ -604,79 +579,6 @@ public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog
         jobEntry.setChanged(backupChanged);
         jobEntry = null;
         dispose();
-    }
-    
-    private ArrayList<String[]> Details(String file, HPCCServerInfo hsi, String Xml){
-		if(Xml.equals(""))
-			xml = hsi.fetchXML(file);
-		else
-			xml = Xml;
-		ArrayList<String[]> details = new ArrayList<String[]>();
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db;
-        Document dom = null;
-		try {
-			 db = dbf.newDocumentBuilder();
-			 InputSource is = new InputSource(new StringReader(xml));
-		     dom = db.parse(is);
-		} catch (ParserConfigurationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (SAXException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} 
-       
-        if(dom == null){
-        	 return null;
-        }
-        
-        Element docElement = dom.getDocumentElement();				       
-        NodeList nList = docElement.getElementsByTagName("Field");
-        
-        eElement = new Element[nList.getLength()];
-		list = new ArrayList<Integer>();
-		for (int temp = 0; temp < nList.getLength(); temp++) {
-			Node nNode = nList.item(temp);
-			System.out.println("\nCurrent Element :" + nNode.getNodeName());
-	 
-			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-	 
-				eElement[temp] = (Element) nNode;
-				
-				System.out.println("Label : " + eElement[temp].getElementsByTagName("Field").getLength());
-				if(eElement[temp].getElementsByTagName("Field").getLength()>0){
-					if(eElement[temp].getAttribute("isDataset").equals("1")){
-						String[] S = new String[5];
-						S[0] = eElement[temp].getAttribute("label").toString();
-						S[1] = "DATASET";
-						S[2] = "";
-						S[3] = eElement[temp].getAttribute("size").toString();
-						S[4] = eElement[temp].getAttribute("size").toString();
-						details.add(S);
-					}
-					list.add(temp);
-					temp += eElement[temp].getElementsByTagName("Field").getLength();
-					
-				}
-				else{
-					System.out.println(eElement[temp].getAttribute("ecltype"));
-					list.add(temp);
-					String[] S = new String[5];
-					S[0] = eElement[temp].getAttribute("label").toString();
-					S[1] = eElement[temp].getAttribute("ecltype").toString();
-					S[2] = "";
-					S[3] = eElement[temp].getAttribute("size").toString();
-					S[4] = eElement[temp].getAttribute("size").toString();
-					details.add(S);
-				}
-			}
-		
-		}
-    	return details;
     }
 
 }
