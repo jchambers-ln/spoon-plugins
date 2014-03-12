@@ -12,6 +12,7 @@ import java.awt.event.TextListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -49,7 +50,7 @@ import org.pentaho.di.ui.core.gui.WindowProperty;
 import org.pentaho.di.ui.job.dialog.JobDialog;
 import org.pentaho.di.ui.job.entry.JobEntryDialog;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
-
+import org.hpccsystems.javaecl.FileInfoSoap;
 import org.hpccsystems.javaecl.HPCCServerInfo;
 import org.hpccsystems.eclguifeatures.AutoPopulate;
 import org.hpccsystems.eclguifeatures.ErrorNotices;
@@ -245,13 +246,15 @@ public class ECLDatasetDialog extends ECLJobEntryDialog{//extends JobEntryDialog
 						//value has changed
 						//System.out.println("fetch field list: " + file);
 						ArrayList<String[]> details = hsi.fetchFileDetails(file);
-						
+						FileInfoSoap c = new FileInfoSoap(serverHost,serverPort,user,pass);
+						String format = c.getFileType(file);
+						System.out.println("Format TYPE::::::" + format);
 						if(hsi.isLogonFail){
 							ErrorNotices en = new ErrorNotices();
 							en.openSaveErrorDialog(getParent(), "Permission Denied!\r\nCan not fetch field definitions, please make sure you have permissions to that file\r\nYou should also verify your user/pass in Global Variables");
 							//en.openDialog("Permission Denied", "You either do not have permissions to access this file or your credentials for the server are wrong.", "");
 						}
-						if(details != null && details.size()>0){
+						if(!format.equalsIgnoreCase("csv") && details != null && details.size()>0){
 							ErrorNotices en = new ErrorNotices();
 							if(en.openComfirmDialog(getParent(), "Do you want to replace your current Record Structure on the\r\nFields tab with the one stored on the server?")){
 								ct.setRecordList(jobEntry.ArrayListToRecordList(details));

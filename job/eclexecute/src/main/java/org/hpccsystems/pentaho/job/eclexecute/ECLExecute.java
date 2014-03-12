@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+
 //import org.hpccsystems.javaecl.Output;
 import org.hpccsystems.javaecl.EclDirect;
 import org.pentaho.di.cluster.SlaveServer;
@@ -29,15 +31,14 @@ import org.pentaho.di.repository.Repository;
 import org.pentaho.di.trans.steps.setvariable.*;
 import org.w3c.dom.Node;
 import org.hpccsystems.javaecl.Column;
+
 import java.io.*;
 
 import org.hpccsystems.javaecl.ECLSoap;
 import org.pentaho.di.ui.spoon.Spoon;
 import org.pentaho.di.core.*;
 import org.pentaho.di.core.gui.SpoonFactory;
-
 import org.pentaho.di.plugins.perspectives.eclresults.*;
-
 import org.hpccsystems.eclguifeatures.*;
 import org.pentaho.di.job.JobMeta;
 import org.hpccsystems.ecljobentrybase.*;
@@ -48,6 +49,8 @@ import org.hpccsystems.salt.hygiene.Generate;
 import org.hpccsystems.saltui.hygiene.*;
 
 import com.hpccsystems.resources.PropertiesReader;
+
+import org.hpccsystems.javaecl.ImportSaltProfileAsProject;
 
 
 /**
@@ -239,154 +242,7 @@ public class ECLExecute extends ECLJobEntry{//extends JobEntryBase implements Cl
 	        if(!error.equals("")){
 	        	logBasic(error);
 	        }
-	      //insert code here to build spec file on compile
-	        
-	        /*
-	        if(includeSALT.equalsIgnoreCase("true")){
-	        	saltIncludePath = this.fileName+ "";
-	        }
-	        if(includeSALT.equalsIgnoreCase("true") && !isInternalLinking){
-	        System.out.println("----------- insert code here to build spec file on compile");
-		        try{
-		        	//find all the datasets and build xml files
-		        	String[] datasets = ap.parseDatasets(jobMeta.getJobCopies());
-		        	
-		        	if(datasets.length != 1){
-		        		//set error state WE ONLY ALLOW ONE DATASET
-		        		
-		        	}
-		        	String file_name = "";
-		        	
-		        	for(int i = 0; i < datasets.length; i++){
-		        		 //iterate through all the xml files and build a specification file.
-		        		//System.out.println("dataset: " + datasets[i]);
-		        		RecordList fields = ap.rawFieldsByDataset(datasets[i],jobMeta.getJobCopies());
-		        		//have field declaration now we need to build the xml
-		        		String fieldCSV = "";
-		        		for (Iterator<RecordBO> iterator = fields.getRecords().iterator(); iterator.hasNext();) {
-		        			RecordBO obj = (RecordBO) iterator.next();
-		 
-		        			//TODO: fix this so it uses the ID passed in Hygine
-		        			if(!obj.getColumnName().equalsIgnoreCase("spoonClusterID")){
-		        				if(fieldCSV.equals("")){
-		        					fieldCSV += obj.getColumnName();
-		        				}else{
-		        					fieldCSV += ","+obj.getColumnName();
-		        				}
-		        				xmlHygieneBuilder += buildHygieneRule(datasets[i], obj.getColumnName(),obj.getColumnType());
-		        			}
-		        			if(obj.getColumnName().equalsIgnoreCase("spoonClusterID")){
-		        				//xmlHygieneBuilder +="<hyg:idname>" + "spoonClusterID" + "</hyg:idname>" +"\r\n";
-		        			}
-		        			//xmlHygieneBuilder +="<hyg:ridfield>" + "spoonRecordID" + "</hyg:hyg:ridfield>" +"\r\n";
-		        			
-		        		}
-		        		xmlHygieneBuilder +="<hyg:idname>" + "spoonClusterID" + "</hyg:idname>" +"\r\n";
-		        		//jobMeta.getJob
-		        		file_name = ap.getDatasetsField("record_name", datasets[i],jobMeta.getJobCopies());
-		        		
-		        		//todo: write layout_<file_name> to file needed for soap
-		        		layoutECL = "EXPORT layout_" + file_name + " := RECORD\r\n" + resultListToString(fields);
-		        		layoutECL += "UNSIGNED6 spoonClusterID := 0;\r\n";
-		        		layoutECL += "UNSIGNED6 spoonRecordID := 0;\r\n";
-		        		layoutECL += "\r\nEND;\r\n\r\n";
-		        		//xmlHygieneBuilder += buildHygieneRule(datasets[i], "SRC","");
-		        		//xmlHygieneBuilder += "<hyg:sourcefield>" + fieldCSV + "</hyg:sourcefield>";
-		        		xmlHygieneBuilder += buildOptReports(datasets[i]);
-		        		//dsECL += System.getProperties().getProperty("Dataset-" + datasets[i]);
-	
-		    	        
-		    	        rsDef = System.getProperties().getProperty("Dataset-" + datasets[i]+"-rsDef");
-		    	        dsDef = System.getProperties().getProperty("Dataset-" + datasets[i]+"-dsDef");
-		    	        recordName = System.getProperties().getProperty("Dataset-" + datasets[i]+"-rs");
-		    	        logicalFile = System.getProperties().getProperty("Dataset-" + datasets[i]+"-logical");
-		    	        fileType = System.getProperties().getProperty("Dataset-" + datasets[i]+"-type");
-		    	        dsName = System.getProperties().getProperty("Dataset-" + datasets[i]+"-ds");
-		        	}
-		        	
-		        	
-		        	
-		        				
-		
-					
-		        	xmlHygieneBuilder = "<hyg:hygiene-spec xmlns:hyg=\"http://hpccsystems.org/salt/hygiene/bean\">" +"\r\n"+
-										    "<hyg:module-name>" + jobNameNoSpace + "module</hyg:module-name>" +"\r\n"+
-										    "<hyg:file-name>" + file_name + "</hyg:file-name>" +"\r\n"+
-										    "<hyg:dataset-rsdef><![CDATA[" + rsDef + "]]></hyg:dataset-rsdef>" +"\r\n"+
-										    "<hyg:dataset-dsdef><![CDATA[" + dsDef + "]]></hyg:dataset-dsdef>" +"\r\n"+
-										    "<hyg:dataset-record-name><![CDATA[" + recordName + "]]></hyg:dataset-record-name>" +"\r\n"+
-										    "<hyg:dataset-name><![CDATA[" + dsName + "]]></hyg:dataset-name>" +"\r\n"+
-										    "<hyg:dataset-logical-file><![CDATA[" + logicalFile + "]]></hyg:dataset-logical-file>" +"\r\n"+
-										    "<hyg:dataset-file-type><![CDATA[" + fileType + "]]></hyg:dataset-file-type>" +"\r\n"+
-										    xmlHygieneBuilder +
-										    "</hyg:hygiene-spec>";
-		        	//System.out.println("-------------------------------------SALT COMPILE--------------------------------");
-		        	try {              
-		             
-		                
-		                BufferedWriter out = new BufferedWriter(new FileWriter(this.fileName + "\\salt.xml"));
-		                out.write(xmlHygieneBuilder);
-		                out.close();
-		                
-		                //FileInputStream fis = new FileInputStream(
-		               // 		this.fileName + "\\salt.xml");
-		                //need to compare xml bevore writting it to see if need to re-compile salt
-		        		Generate gen = new Generate();
-		        		String spec = gen.generateHygieneSpecFromXMLFile(this.fileName + "\\salt.xml");
-		        		BufferedWriter out2 = new BufferedWriter(new FileWriter(this.fileName + "\\salt.spc"));
-		                out2.write(spec);
-		                out2.close();
-		                
-		                String modFile = "";
-		                //System.out.println("-------------------------------------SALT COMPILE2--------------------------------");
-		                boolean compileSuccess = ECLExecuteSalt.compileSalt(SALTPath, this.fileName + "\\salt.spc", this.fileName+ "",jobNameNoSpace,error,this.fileName);
-		                
-		                if(!compileSuccess){
-		                	 String SaltError = "Unable to create the SALT files! Please check your salt path in Global Variables, and your output path in Execute.";
-		                	 result.setResult(false);
-		                	 result.setStopped(true);
-		                	 result.setLogText(SaltError);
-		                 	 logError(SaltError);
-		                 	 System.out.println(SaltError);
-		                 	 error += SaltError;
-		                 	 return result;
-		                }else{
-		                	logBasic("Salt Compiled");
-		                	//System.out.println("Salt Compiled moving on");
-		                }
-		                
-		                //fixEclFiles(this.fileName + "\\" + jobNameNoSpace + "module");
-		                
-		        		
-		            } catch (IOException e) {
-		                 e.printStackTrace();
-		                 String SaltError = "Unable to create the SALT files! Please check your salt path in Global Variables, and your output path in Execute.";
-	                	 result.setResult(false);
-	                	 result.setStopped(true);
-	                	 result.setLogText(SaltError);
-	                 	 logError(SaltError);
-	                 	 System.out.println(SaltError);
-	                 	 error += SaltError;
-	                 	 return result;
-		            }   
-		        	
-		        	
-		        	try {              
-
-		                BufferedWriter out = new BufferedWriter(new FileWriter(this.fileName + "\\" + jobNameNoSpace + "module\\layout_" + file_name + ".ecl"));
-		                out.write(layoutECL);
-		                out.close();
-		            } catch (IOException e) {
-		                 e.printStackTrace();
-		            }   
-		        	
-		        }catch (Exception e){
-		        	System.out.println("--------------FAILED---------------");
-		        	System.out.println(e.toString());
-		            e.printStackTrace();
-		        }
-	        }
-	        */
+	     
 	        //System.out.println("Output -- Finished setting up Global Variables");
 	        this.setServerAddress(serverHost);
 	        this.setServerPort(serverPort);
@@ -410,42 +266,7 @@ public class ECLExecute extends ECLJobEntry{//extends JobEntryBase implements Cl
             System.out.println("---------------------------------------");
             System.out.println("---------------------------------------");
             System.out.println("---------------------------------------");
-           /* String eclCode = "";
-            if (list == null) {
-                list = new ArrayList<RowMetaAndData>();
-            } else {
-
-            	for (int i = 0; i < list.size(); i++) {
-                	try{
-                		boolean hasECL = false;
-    	                RowMetaAndData rowData = (RowMetaAndData) list.get(i);
-    	                RowMeta rowMeta = (RowMeta) rowData.getRowMeta();
-    	                String[] fields = rowMeta.getFieldNames();
-    	                for(int cnt = 0; cnt<fields.length; cnt++){
-    	                	if(fields[cnt].equals("ecl")){
-    	                		hasECL = true;
-    	                	}
-    	                }
-    	                if(hasECL){
-    		                String code = rowData.getString("ecl", null);
-    		                if (code != null) {
-    		                    eclCode += code;
-    		                }
-    	                }
-                	}catch (Exception e){
-                		//ecl doesn't exist skip it
-                		//I can't find a way to check rowData if it exists
-                		e.printStackTrace();
-                	}
-                }
-                logBasic("{Execute Job} Execute Code =" + eclCode);
-            }
           
-            */
-           
-           // List<RowMetaAndData> prevlist = result.getRows();
-            
-            //for (int i = 0; i < list.size(); i++) {
             for (int i = list.size()-1; i >=0; i--) {
             	try{
             		boolean hasECL = false;
@@ -571,22 +392,25 @@ public class ECLExecute extends ECLJobEntry{//extends JobEntryBase implements Cl
             
             ArrayList<String> resultNames = eclDirect.getResultNames();
             writeResultsLog(resultNames,eclDirect.getWuid(),jobName,serverAddress, serverPort);
-
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             for (int n = 0; n<resultNames.size(); n++){
             	//System.out.println("+++Results --------------------" + resultNames.get(n));
             	resName = resultNames.get(n);
             
-	            //resName = eclDirect.getResName();
-	            //System.out.println("++Spring HTML -------------------------" + resName);
+            	String slash = "\\";
+            	if(this.fileName.contains("/") && !this.fileName.contains("\\")){
+             		slash = "/";
+             		
+             	}
 	            if(resName.equalsIgnoreCase("dataProfilingResults") || resName.equalsIgnoreCase("Dataprofiling_AllProfiles")){ 
 	                RenderWebDisplay rwd = new RenderWebDisplay();
 	                
-	                String slash = "\\";
+	                
 	                String resFileName = this.fileName + resName + ".csv";
-	             	if(this.fileName.contains("/") && !this.fileName.contains("\\")){
-	             		slash = "/";
-	             		
-	             	}
+	             	
 	             	if(this.fileName.lastIndexOf("\\") != (this.fileName.length()-1) || this.fileName.lastIndexOf("/") != (this.fileName.length()-1)){
 	             		resFileName = this.fileName + slash + resName + ".csv";
 	         		}
@@ -604,45 +428,28 @@ public class ECLExecute extends ECLJobEntry{//extends JobEntryBase implements Cl
 	         			System.setProperty("saltData",  resFileName);
 	         		}
 	            }
+	          //resName = eclDirect.getResName();
+	            System.out.println("++resName -------------------------" + resName);
+            	if(resName.equalsIgnoreCase("Dataprofiling_OptimizedLayout")){
+            		String olFile = this.fileName + slash + resName + ".csv";
+            		String jobFile = super.getParentJob().getFilename();
+            		
+            		String outFile = this.fileName + "\\optimizedLayoutProject.kjb";
+            		System.out.println(outFile);
+            		System.out.println(jobFile);
+            		System.out.println(olFile);
+            		ImportSaltProfileAsProject ispap = new ImportSaltProfileAsProject(outFile,jobFile,olFile);
+            		try{	
+            			ispap.processRecLayoutFile(olFile);
+            			ispap.parseProfileJob();
+            		}catch (Exception e){
+            			System.out.println("error");
+            			e.printStackTrace();
+            		}
+            		//public ImportSaltProfileAsProject(String optimizedJobFile, String profileJob, String optimizedLayoutFileName){
+            	}
 	            
-	            //cacheOutputInfo("Dataprofiling_SummaryReport","saltSummaryData", resName);
-	            
-	            /*if(resName.equalsIgnoreCase("Dataprofiling_SummaryReport")){
-	            
-	            	String saltSummaryData = System.getProperty("saltSummaryData");
-	         		if(saltSummaryData != null && !saltSummaryData.equals("")){
-	         			System.setProperty("saltSummaryData",  saltSummaryData + "," + this.fileName + "\\" + resName + ".csv");
-	         		}else{
-	         			System.setProperty("saltSummaryData",  this.fileName + "\\" + resName + ".csv");
-	         		}
-	            }*/
-	            //Dataprofiling_OptimizedLayout
-	            //saltOptimizedLayouts
-	            //cacheOutputInfo("Dataprofiling_OptimizedLayout","saltOptimizedLayouts", resName);
-	            /*
-	            if(resName.equalsIgnoreCase("Dataprofiling_OptimizedLayout")){
-		            
-	            	String saltSummaryData = System.getProperty("saltOptimizedLayouts");
-	         		if(saltSummaryData != null && !saltSummaryData.equals("")){
-	         			System.setProperty("saltOptimizedLayouts",  saltSummaryData + "," + this.fileName + "\\" + resName + ".csv");
-	         		}else{
-	         			System.setProperty("saltOptimizedLayouts",  this.fileName + "\\" + resName + ".csv");
-	         		}
-	            }
-	            */
-	         
-	            //SrcOutliers
-	            //cacheOutputInfo("SrcOutliers","saltSrcOutliers", resName);
-	            //ClusterSrc
-	           // cacheOutputInfo("ClusterSrc","saltClusterSrc", resName);
-	            //ClusterCounts
-	            //cacheOutputInfo("ClusterCounts","saltClusterCounts", resName);
-	            //SrcProfiles
-	            //cacheOutputInfo("SrcProfiles","saltSrcProfiles", resName);
-	            //Hygiene_ValidityErrors
-	            //cacheOutputInfo("Hygiene_ValidityErrors","saltHygiene_ValidityErrors", resName);
-	            //CleanedData
-	           // cacheOutputInfo("CleanedData","saltCleanedData", resName);
+	          
             }
             if(isValid){
             	prevResult.clear();
@@ -657,21 +464,12 @@ public class ECLExecute extends ECLJobEntry{//extends JobEntryBase implements Cl
        return result;
     }
 	
-	/*public void cacheOutputInfo(String thisResName,String propertyName, String resName){
-		try{
-		if(resName.equalsIgnoreCase(thisResName)){
-            
-        	String resultData = System.getProperty(propertyName);
-     		if(resultData != null && !resultData.equals("")){
-     			System.setProperty(propertyName,  resultData + "," + this.fileName + "\\" + resName + ".csv");
-     		}else{
-     			System.setProperty(propertyName,  this.fileName + "\\" + resName + ".csv");
-     		}
-        }
-		}catch (Exception e){
-			System.out.println("Error Setting result data");
-		}
-	}*/
+	public void buildOptimizer(){
+		super.getFilename();
+		
+	}
+	
+
 	public void cacheOutputInfo(String fileName){
 		String propertyName = "resultsFile";
 		try{
@@ -749,18 +547,7 @@ public class ECLExecute extends ECLJobEntry{//extends JobEntryBase implements Cl
         }
     }
 
-    /*public boolean evaluates() {
-    	//boolean isValid = true;
-    	System.out.println("{EXECUTE: isValid (start): " + isValid);
-    	System.out.println(ECLJobEntry.timesExecutedMap.get(this.getName()));
-    	if(isValid && ECLJobEntry.validMap.containsKey(this.getName())){
-    		isValid = ECLJobEntry.validMap.get(this.getName());
-    	}
-    	System.out.println("{EXECUTE: isValid (end): " + isValid);
-    	System.out.println(ECLJobEntry.timesExecutedMap.get(this.getName()));
-    	return isValid;
-    	
-    }*/
+
 
     
     
