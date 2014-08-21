@@ -119,6 +119,33 @@
 			
 		</zip>
 	</target>
+	<target name="create-eda">
+		<zip destfile="${basedir}/target/spoon-plugins-eda.zip">
+		<zipfileset dir="${basedir}/job-eda/eclcorrelation/target" includes="eclcorrelation.jar" prefix="jobentries/eclcorrelation" />
+		<zipfileset dir="${basedir}/job-eda/eclfrequencygroup/target" includes="eclfrequencygroup.jar" prefix="jobentries/eclfrequencygroup" />
+		<zipfileset dir="${basedir}/job-eda/eclgraph/target" includes="eclgraph.jar" prefix="jobentries/eclgraph" />
+		<zipfileset dir="${basedir}/job-eda/ecllibrarybuilder/target" includes="ecllibrarybuilder.jar" prefix="jobentries/ecllibrarybuilder" />
+		<zipfileset dir="${basedir}/job-eda/eclnewreportbuilder/target" includes="eclnewreportbuilder.jar" prefix="jobentries/eclnewreportbuilder" />
+		<zipfileset dir="${basedir}/job-eda/ecloutliers/target" includes="ecloutliers.jar" prefix="jobentries/ecloutliers" />
+		<zipfileset dir="${basedir}/job-eda/eclpercentile/target" includes="eclpercentile.jar" prefix="jobentries/eclpercentile" />
+		<zipfileset dir="${basedir}/job-eda/eclpercentilebuckets/target" includes="eclpercentilebuckets.jar" prefix="jobentries/eclpercentilebuckets" />
+		<zipfileset dir="${basedir}/job-eda/eclpluginception/target" includes="eclpluginception.jar" prefix="jobentries/eclpluginception" />
+		<zipfileset dir="${basedir}/job-eda/eclrandom/target" includes="eclrandom.jar" prefix="jobentries/eclrandom" />
+		<zipfileset dir="${basedir}/job-eda/eclregression/target" includes="eclregression.jar" prefix="jobentries/eclregression" />
+		<zipfileset dir="${basedir}/job-eda/ecltabulate/target" includes="ecltabulate.jar" prefix="jobentries/ecltabulate" />
+		<zipfileset dir="${basedir}/job-eda/ecltabulatebuckets/target" includes="ecltabulatebuckets.jar" prefix="jobentries/ecltabulatebuckets" />
+		<zipfileset dir="${basedir}/job-eda/eclunivariate/target" includes="eclunivariate.jar" prefix="jobentries/eclunivariate" />
+
+		
+		</zip>
+	</target>
+	<target name="create-distribution-eda" >
+		<zip destfile="${basedir}/target/spoon-plugins-distribution-eda.zip">
+			<zipgroupfileset dir="target" includes="spoon-plugins.zip" />
+			<zipgroupfileset dir="target" includes="spoon-plugins-eda.zip" />
+			<zipfileset dir="${basedir}/eclgui/src/main/resources/properties/nolib" includes="libraryInclude.properties" prefix="hpcc-common/properties" />
+		</zip>
+	</target>
 	<target name="create-distribution-salt" >
 		<zip destfile="${basedir}/target/spoon-plugins-distribution-salt.zip">
 			<zipgroupfileset dir="target" includes="spoon-plugins.zip" />
@@ -142,6 +169,7 @@
 			<zipgroupfileset dir="target" includes="spoon-plugins.zip" />
 			<zipgroupfileset dir="target" includes="spoon-plugins-ml.zip" />
 			<zipgroupfileset dir="target" includes="spoon-plugins-salt.zip" />
+			<zipgroupfileset dir="target" includes="spoon-plugins-eda.zip" />
 		</zip>
 	</target>
 	<target name="create-distribution">

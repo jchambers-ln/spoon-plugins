@@ -19,6 +19,7 @@
 		<module>eclerror</module>
 		<module>eclexecute</module>
 		<module>eclfilter</module>
+		<module>eclfiltersimple</module>
 		<module>eclgeneric</module>
 		<module>eclglobalvariables</module>
 		<module>eclgroup</module>
@@ -35,6 +36,8 @@
 		<module>eclsort</module>
 		<module>eclsprayfile</module>
 		<module>ecltable</module>
+		
+	
 	</modules>
 
 	<properties>

@@ -37,9 +37,14 @@ public class IncludeLibPropertiesReader {
 	public static Properties getApplicationProperties() {
 		applicationProperties = new Properties();
 		try {
+			String slash = "\\";
 			String currentDir = System.getProperty("user.dir");
+			if (!System.getProperty("os.name").startsWith("Windows")) {
+				slash = "/";
+			}
+			
 		    System.out.println("IncludeLibProp: Current dir using System:" +currentDir);
-			propertiesFileLocation = currentDir + "\\plugins\\hpcc-common\\properties\\libraryInclude.properties";
+			propertiesFileLocation = currentDir + slash + "plugins"+slash+"hpcc-common"+slash+"properties"+slash+"libraryInclude.properties";
 			System.out.println("IncludeLibProp: Using file:" +propertiesFileLocation);
 			//applicationProperties.load(PropertiesReader.class.getClassLoader().getResourceAsStream(propertiesFileLocation));
 			applicationProperties.load(new FileInputStream(propertiesFileLocation));

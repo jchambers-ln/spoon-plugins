@@ -37,15 +37,20 @@ public class PropertiesReader {
 	public static Properties getApplicationProperties() {
 		applicationProperties = new Properties();
 		try {
+			String slash = "\\";
 			String currentDir = System.getProperty("user.dir");
+			if (!System.getProperty("os.name").startsWith("Windows")) {
+				slash = "/";
+			}
+			
 		    System.out.println("Current dir using System:" +currentDir);
-			propertiesFileLocation = currentDir + "\\hpccsystems.properties";
+			propertiesFileLocation = currentDir + slash + "hpccsystems.properties";
 			System.out.println("Using file:" +propertiesFileLocation);
 			//applicationProperties.load(PropertiesReader.class.getClassLoader().getResourceAsStream(propertiesFileLocation));
 			applicationProperties.load(new FileInputStream(propertiesFileLocation));
 			
 		} catch (IOException ex) {
-			ex.printStackTrace();
+			//ex.printStackTrace();
 		} 
 		
 		return applicationProperties;

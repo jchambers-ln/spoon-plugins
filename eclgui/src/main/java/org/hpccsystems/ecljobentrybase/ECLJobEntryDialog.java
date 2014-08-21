@@ -229,7 +229,7 @@ public class ECLJobEntryDialog extends JobEntryDialog implements JobEntryDialogI
             fieldFormat.left = new FormAttachment(middle, 0);
             fieldFormat.top = new FormAttachment(prevControl, margin);
             fieldFormat.right = new FormAttachment(100, 0);
-            fieldFormat.height = 50;
+            fieldFormat.height = 25;
             combo.setLayoutData(fieldFormat);
 
             return combo;

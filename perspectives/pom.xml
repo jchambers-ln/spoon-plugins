@@ -15,7 +15,8 @@
 	<modules>
 		<module>eclresults</module>
 	    <module>eclconfig</module>
-		
+		<module>ecllibrary</module>
+		<module>eclmyperspective</module>
 	</modules>
 
 	<properties>
