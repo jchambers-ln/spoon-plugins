@@ -116,11 +116,11 @@ private String[] filePath;
   }
   
   private ECLMySwtPerspective(){  
-   // System.out.println("create eclResults ECLResultsSwtPerspective");
-    createUI();
+   System.out.println("create eclResults ECLResultsSwtPerspective");
+    //createUI();
   }
 
-  private void createUI(){
+/*  private void createUI(){
 	  
 	  parentShell = ((Spoon) SpoonFactory.getInstance()).getShell();
 	    
@@ -139,11 +139,8 @@ private String[] filePath;
 		folder.setLayoutData(new GridData(GridData.FILL_BOTH));
     	//Label lbl = new Label(folder, SWT.NONE);
     	//lbl.setText("hjgghjghjg");
-	  
-    	
-    
-	  
   }
+*/
   public void buildgui(final String fileName) throws Exception{
 	  String file = ""; 
 	  CTabItem wuidTab = new CTabItem(folder, SWT.NONE);
@@ -1004,7 +1001,27 @@ private String[] filePath;
   
   // Whatever you pass out will be reparented. Don't construct the UI in this method as it may be called more than once.
   public Composite getUI() {
-       //System.out.println("getUI");
+      System.out.println("getUI");
+	  if(comp == null){
+		  parentShell = ((Spoon) SpoonFactory.getInstance()).getShell();
+		    
+		  display = parentShell.getDisplay();
+
+		  comp = new Composite(((Spoon) SpoonFactory.getInstance()).getShell(), SWT.BORDER);
+		  comp.setLayout(new GridLayout());
+		  comp.setLayoutData(new GridData(GridData.FILL_BOTH));
+		  
+		  //CTabItem tab2 = new CTabItem(folder, SWT.NONE);
+	    	//tab2.setText("jus' checkin'");
+		  
+			folder = new CTabFolder(comp, SWT.CLOSE);
+			folder.setSimple(false);
+			folder.setBorderVisible(true);
+			folder.setLayoutData(new GridData(GridData.FILL_BOTH));
+	    	//Label lbl = new Label(folder, SWT.NONE);
+	    	//lbl.setText("hjgghjghjg");
+		  
+	  }
     return comp;
   }
 
