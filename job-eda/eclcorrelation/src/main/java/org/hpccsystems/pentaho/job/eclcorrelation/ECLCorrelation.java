@@ -29,9 +29,9 @@ import org.hpccsystems.javaecl.Filter;
 public class ECLCorrelation extends ECLJobEntry{//extends JobEntryBase implements Cloneable, JobEntryInterface {
     
     private String datasetName = "";
-    private java.util.List fields = new ArrayList();
+    private ArrayList<Player> fields = new ArrayList<Player>();
     private String method = "";
-    private String fieldList = "";
+   
     private String rule = "";
     private String label ="";
 	private String outputName ="";
@@ -87,13 +87,6 @@ public class ECLCorrelation extends ECLJobEntry{//extends JobEntryBase implement
         this.datasetName = datasetName;
     }
 
-    public String getFieldList() {
-        return fieldList;
-    }
-
-    public void setFieldList(String fieldList) {
-        this.fieldList= fieldList;
-    }
     
     public String getMethod() {
         return method;
@@ -103,11 +96,11 @@ public class ECLCorrelation extends ECLJobEntry{//extends JobEntryBase implement
         this.method = method;
     }
 
-	public void setFields(java.util.List fields){
+	public void setFields(ArrayList<Player> fields){
 		this.fields = fields;
 	}
 	
-	public java.util.List getFields(){
+	public ArrayList<Player> getFields(){
 		return fields;
 	}
 
@@ -118,101 +111,56 @@ public class ECLCorrelation extends ECLJobEntry{//extends JobEntryBase implement
         	return result;
         }
         else{	
-        	
-        	String[] fieldNames = fieldList.split(",");String field = "";
-        	String normlist = "";
-        	for(int i = 0; i<fieldNames.length; i++){
-        		if(i!=fieldNames.length-1){
-        			field += "\'"+fieldNames[i]+"\',";
-        			normlist += "LEFT."+fieldNames[i]+",";
+        	String ecl = "";int idx = 1;String Rec = "";String choose = "";String valChoose = "";int cnt = 0;
+        	for(Iterator<Player> it = fields.iterator(); it.hasNext();){
+        		Player P = (Player) it.next();
+        		String S = P.getFirstName();
+        		String rule = P.getRule();
+        		boolean first = true;
+        		for(Iterator<Player> it1 = fields.iterator(); it1.hasNext();){
+        			if(idx < fields.size()){
+        				Player P1 = (Player) it1.next();
+	        			if(first){
+		        			for(int i = 0; i<idx; i++){
+		        				P1 = (Player) it1.next();        				
+		        			}
+		        			first = false;
+	        			}
+	            		String S1 = P1.getFirstName();
+	            		String rule1 = P1.getRule();
+	            		if(!rule.equals("") && !rule1.equals("")){
+	            			Rec += S+"_"+S1+"_CORR := CORRELATION(GROUP,"+S+","+S1+","+rule+"AND "+rule1+"),\n";
+	            			Rec += S+"_"+S1+"_RECS_USED := COUNT(GROUP,"+rule+"AND "+rule1+"),\n";
+	            		}
+	            		if(rule.equals("") && !rule1.equals("")){
+	            			Rec += S+"_"+S1+"_CORR := CORRELATION(GROUP,"+S+","+S1+","+rule1+"),\n";
+	            			Rec += S+"_"+S1+"_RECS_USED := COUNT(GROUP,"+rule1+"),\n";
+	            		}
+	            		if(!rule.equals("") && rule1.equals("")){
+	            			Rec += S+"_"+S1+"_CORR := CORRELATION(GROUP,"+S+","+S1+","+rule+"),\n";
+	            			Rec += S+"_"+S1+"_RECS_USED := COUNT(GROUP,"+rule+"),\n";
+	            		}
+	            		if(rule.equals("") && rule1.equals("")){
+	            			Rec += S+"_"+S1+"_CORR := CORRELATION(GROUP,"+S+","+S1+"),\n";
+	            			Rec += S+"_"+S1+"_RECS_USED := COUNT(GROUP),\n";
+	            		}
+	            		choose += "'"+S+"_"+S1+"_CORR','"+S+"_"+S1+"_RECS_USED',";
+	            		valChoose += "LEFT."+S+"_"+S1+"_CORR,LEFT."+S+"_"+S1+"_RECS_USED,";
+	            		cnt++;            		
+        			}
         		}
-        		else{
-        			field += "\'"+fieldNames[i]+"\'";
-        			normlist += "LEFT."+fieldNames[i];
-        		}
+        		idx++;
+        		if(idx == fields.size())
+        			break;
         	}
+        	Rec = Rec.substring(0,Rec.length()-2);
+        	choose = choose.substring(0,choose.length()-1);
+        	valChoose = valChoose.substring(0,valChoose.length()-1);
         	
-        	String ecl ="";
-        	
-    		if(!(this.rule.isEmpty())) //Added for accommodating the new outlier rules   
-    		{
-    			ecl+="OutlierRule := "+this.getDatasetName()+"(~"+this.getRule().trim()+");\r\n";
-    			ecl += "URecCorr := RECORD\nUNSIGNED uid;\n"+"OutlierRule"+";\nEND;\n";
-            	ecl += "URecCorr TransCorr("+"OutlierRule"+" L, INTEGER C) := TRANSFORM\nSELF.uid := C;\nSELF := L;\nEND;\n"; 
-            	ecl += "MyDSCorr := PROJECT("+"OutlierRule"+",TransCorr(LEFT,COUNTER));\n";
-       		}
-    		else{
-    			ecl += "URecCorr := RECORD\nUNSIGNED uid;\n"+this.datasetName+";\nEND;\n";
-            	ecl += "URecCorr TransCorr("+this.datasetName+" L, INTEGER C) := TRANSFORM\nSELF.uid := C;\nSELF := L;\nEND;\n"; 
-            	ecl += "MyDSCorr := PROJECT("+datasetName+",TransCorr(LEFT,COUNTER));\n";
-    		}
-    		
-        	ecl += "NumFieldCorr := RECORD\nUNSIGNED id;\nUNSIGNED4 number;\nREAL8 value;STRING field;\nEND;\n";
-        	ecl += "OutDSCorr := NORMALIZE(MyDSCorr,"+fieldNames.length+", TRANSFORM(NumFieldCorr,SELF.id:=LEFT.uid,SELF.number:=COUNTER;" +
-        			"SELF.field:=CHOOSE(COUNTER,"+field+");SELF.value:=CHOOSE(COUNTER,"+normlist+")));\n";
-        	
-        	ecl += "RankableFieldCorr := RECORD\nOutDSCorr;\nUNSIGNED pos:=0;\nEND;\n";
-        	ecl += "TCorr:=TABLE(SORT(OutDSCorr,Number,field,Value),RankableFieldCorr);\n";
-        	ecl += "TYPEOF(TCorr) add_rank_corr(TCorr le, UNSIGNED c):=TRANSFORM\nSELF.pos:=c;\nSELF:=le;\nEND;\n";
-        	ecl += "PCorr:=PROJECT(TCorr,add_rank_corr(LEFT,COUNTER));\n";
-        	ecl += "RSCorr:=RECORD\nSeq:=MIN(GROUP,PCorr.pos);\nPCorr.number;\nEND;\n";
-        	ecl += "SplitsCorr := TABLE(PCorr,RSCorr,number,FEW);\n";
-        	ecl += "TYPEOF(TCorr) toCorr(PCorr le, SplitsCorr ri):=TRANSFORM\nSELF.pos:=1+le.pos-ri.Seq;\nSELF:=le;\nEND;\n";
-        	ecl += "outfileCorr := JOIN(PCorr,SplitsCorr,LEFT.number=RIGHT.number,toCorr(LEFT,RIGHT),LOOKUP);\n";
-        	
-        	ecl += "modeRecCorr:=RECORD\noutfileCorr.number;\noutfileCorr.value;\noutfileCorr.pos;\noutfileCorr.field;\nvals:=COUNT(GROUP);\nEND;\n";
-        	ecl += "MTableCorr:=TABLE(outfileCorr,modeRecCorr,number,field,value);\n";
-        	ecl += "newRecCorr:=RECORD\nMTableCorr.number;\nMTableCorr.value;\nMTableCorr.field;\npo:=(MTableCorr.pos*MtableCorr.vals + ((MtableCorr.vals-1)*MtableCorr.vals/2))/MtableCorr.vals;\nEND;\n";
-        	ecl += "newTableCorr := TABLE(MTableCorr,newRecCorr);\n";
-        	ecl += "TestTabCorr := JOIN(outfileCorr,newTableCorr,LEFT.number = RIGHT.number AND LEFT.value = RIGHT.value);\n";
-        	
-        	
-        	ecl += "MyRecCorr:=RECORD\nTestTabCorr;\nEND;\n";
-        	ecl += "T1Corr:=TABLE(TestTabCorr,MyRecCorr,id,number,field);\n";
-        	
-        	ecl += "SingleForm := RECORD\nT1Corr.number;\nT1Corr.field;\nREAL8 meanP := AVE(GROUP,T1Corr.value);\nREAL8 sdP := SQRT(VARIANCE(GROUP,T1Corr.value));\nREAL8 meanS := AVE(GROUP,T1Corr.po);\nREAL8 sdS := SQRT(VARIANCE(GROUP,T1Corr.po));\nEND;\n"; 
-        	ecl += "single := TABLE(T1Corr,SingleForm,number,field,FEW);\n";
-        	ecl += "PairRec := RECORD\nUNSIGNED4 left_number;\nUNSIGNED4 right_number;\nSTRING left_field;\nSTRING right_field;\nREAL8 xyP;\nREAL8 xyS;\nEND;\n";
-        	ecl += "PairRec product(T1Corr L, T1Corr R) := TRANSFORM\nSELF.left_number := L.number;\nSELF.right_number := R.number;\nSELF.left_field:=L.field;\nSELF.right_field:=R.field;\nSELF.xyP := L.value*R.value;\nSELF.xyS := L.po*R.po;\nEND;\n";
-        	ecl += "pairs := JOIN(T1Corr,T1Corr,LEFT.id=RIGHT.id AND LEFT.number<RIGHT.number,product(LEFT,RIGHT));\n";
-        	
-        	ecl += "PairAccum := RECORD\npairs.left_number;\npairs.right_number;\npairs.left_field;\npairs.right_field;\ne_xyS := SUM(GROUP,pairs.xyS);\ne_xyP := SUM(GROUP,pairs.xyP);\nEND;\n";
-        	
-        	ecl += "exys := TABLE(pairs,PairAccum,left_number,right_number,left_field,right_field,FEW);\n";
-        	ecl += "with_x := JOIN(exys,single,LEFT.left_number = RIGHT.number,LOOKUP);\n";
-        	
-        	if(this.method.equalsIgnoreCase("Pearson")){
-        	
-	        	ecl += "PearRec := RECORD\nUNSIGNED left_number;\nUNSIGNED right_number;\nSTRING left_field;\nSTRING right_field;\nREAL8 Pearson;\nEND;\nnCorr := COUNT(MyDSCorr);\n";
-	        	ecl += "PearRec Tran(with_x L, single R) := TRANSFORM\nSELF.Pearson := (L.e_xyP - nCorr*L.meanP*R.meanP)/(nCorr*L.sdP*R.sdP);\nSELF := L;\nEND;\n";
-	        	ecl += "pears := JOIN(with_x,single,LEFT.right_number=RIGHT.number,Tran(LEFT,RIGHT),LOOKUP);\n";
-	        	if(persist.equalsIgnoreCase("true")){
-            		if(outputName != null && !(outputName.trim().equals(""))){
-            			ecl += "OUTPUT(SORT(TABLE(pears,{left_field,right_field,Pearson}),left_field)"+",,'~"+outputName+"::correlation', __compressed__, overwrite,NAMED('Correlation'))"+";\n";
-            		}else{
-            			ecl += "OUTPUT(SORT(TABLE(pears,{left_field,right_field,Pearson}),left_field)"+",,'~"+defJobName+"::correlation', __compressed__, overwrite,NAMED('Correlation'))"+";\n";
-            		}
-            	}
-            	else{
-            		ecl += "OUTPUT(SORT(TABLE(pears,{left_field,right_field,Pearson}),left_field),NAMED('Correlation'));\n";
-            	}
-        	}
-        	else if(this.method.equalsIgnoreCase("Spearman")){
-	        	ecl += "SPearRec := RECORD\nUNSIGNED left_number;\nUNSIGNED right_number;\nSTRING left_field;\nSTRING right_field;\nREAL8 Spearman;\nEND;\nnCorr := COUNT(MyDSCorr);\n";
-	        	ecl += "SPearRec Tran(with_x L, single R) := TRANSFORM\nSELF.Spearman := (L.e_xyS - nCorr*L.meanS*R.meanS)/(nCorr*L.sdS*R.sdS);\nSELF := L;\nEND;\n";
-	        	ecl += "Spears := JOIN(with_x,single,LEFT.right_number=RIGHT.number,Tran(LEFT,RIGHT),LOOKUP);\n";
-	        	if(persist.equalsIgnoreCase("true")){
-            		if(outputName != null && !(outputName.trim().equals(""))){
-            			ecl += "OUTPUT(SORT(TABLE(Spears,{left_field,right_field,Spearman}),left_field)"+",,'~"+outputName+"::correlation', __compressed__, overwrite,NAMED('Correlation'))"+";\n";
-            		}else{
-            			ecl += "OUTPUT(SORT(TABLE(Spears,{left_field,right_field,Spearman}),left_field)"+",,'~"+defJobName+"::correlation', __compressed__, overwrite,NAMED('Correlation'))"+";\n";
-            		}
-            	}
-            	else{
-            		ecl += "OUTPUT(SORT(TABLE(Spears,{left_field,right_field,Spearman}),left_field),NAMED('Correlation'));\n";
-            	}
-	        	
-        	}
+        	ecl += "Tbl := TABLE("+getDatasetName()+",{"+Rec+"});\n";
+        	ecl += "MyRec := RECORD\n	STRING Fields;\n	REAL Val;\nEND;\n";
+        	ecl += "MyCorr := NORMALIZE(Tbl,"+cnt*2+",TRANSFORM(MyRec,SELF.Fields:=CHOOSE(counter,"+choose+"),SELF.Val:=CHOOSE(counter,"+valChoose+")));\n";
+        	ecl += "OUTPUT(MyCorr,NAMED('Correlation'));\n";
         	
         	logBasic(ecl);
         	
@@ -239,7 +187,7 @@ public class ECLCorrelation extends ECLJobEntry{//extends JobEntryBase implement
     	while(it.hasNext()){
     		if(!isFirst){out+="|";}
     		Player p = (Player) it.next();
-    		out +=  p.getFirstName();
+    		out +=  p.getFirstName()+","+p.getRule();
             isFirst = false;
     	}
     	return out;
@@ -251,9 +199,13 @@ public class ECLCorrelation extends ECLJobEntry{//extends JobEntryBase implement
         if(len>0){
         	fields = new ArrayList();
         	for(int i = 0; i<len; i++){
-        		String S = strLine[i];
+        		String[] S = strLine[i].split(",");
         		Player P = new Player();
-        		P.setFirstName(S);
+        		P.setFirstName(S[0]);
+        		if(S.length == 1)
+        			P.setRule("");
+        		else
+        			P.setRule(S[1]);
         		fields.add(P);
         	}
         }
@@ -274,8 +226,6 @@ public class ECLCorrelation extends ECLJobEntry{//extends JobEntryBase implement
                 setMethod(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "method")));
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "fields")) != null)
                 openFields(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "fields")));
-            if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "fieldList")) != null)
-                setFieldList(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "fieldList")));
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "rule")) != null)
                 setRule(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "rule")));
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "output_name")) != null)
@@ -299,7 +249,6 @@ public class ECLCorrelation extends ECLJobEntry{//extends JobEntryBase implement
         retval += super.getXML();
       
         retval += "		<method><![CDATA[" + method + "]]></method>" + Const.CR;
-        retval += "		<fieldList><![CDATA[" + fieldList + "]]></fieldList>" + Const.CR;
         retval += "		<fields><![CDATA[" + this.saveFields() + "]]></fields>" + Const.CR;
         retval += "		<dataset_name><![CDATA[" + datasetName + "]]></dataset_name>" + Const.CR;
         retval += "		<rule><![CDATA[" + rule + "]]></rule>" + Const.CR;
@@ -321,8 +270,6 @@ public class ECLCorrelation extends ECLJobEntry{//extends JobEntryBase implement
                 method = rep.getStepAttributeString(id_jobentry, "method"); //$NON-NLS-1$
             if(rep.getStepAttributeString(id_jobentry, "fields") != null)
                 this.openFields(rep.getStepAttributeString(id_jobentry, "fields")); //$NON-NLS-1$
-            if(rep.getStepAttributeString(id_jobentry, "fieldList") != null)
-                fieldList = rep.getStepAttributeString(id_jobentry, "fieldList"); //$NON-NLS-1$
             if(rep.getStepAttributeString(id_jobentry, "rule") != null)
                 rule = rep.getStepAttributeString(id_jobentry, "rule"); //$NON-NLS-1$
             if(rep.getStepAttributeString(id_jobentry, "outputName") != null)
@@ -344,7 +291,6 @@ public class ECLCorrelation extends ECLJobEntry{//extends JobEntryBase implement
             rep.saveStepAttribute(id_job, getObjectId(), "datasetName", datasetName); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "fields", this.saveFields()); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "method", method); //$NON-NLS-1$
-            rep.saveStepAttribute(id_job, getObjectId(), "fieldList", fieldList); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "rule", rule); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "outputName", outputName);
         	rep.saveStepAttribute(id_job, getObjectId(), "label", label);

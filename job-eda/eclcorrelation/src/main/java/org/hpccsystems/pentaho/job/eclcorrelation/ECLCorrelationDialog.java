@@ -5,10 +5,8 @@
 package org.hpccsystems.pentaho.job.eclcorrelation;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
@@ -52,18 +50,17 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
+import org.hpccsystems.eclguifeatures.AutoPopulate;
+import org.hpccsystems.eclguifeatures.ErrorNotices;
+import org.hpccsystems.ecljobentrybase.ECLJobEntryDialog;
+import org.hpccsystems.recordlayout.RecordLabels;
+import org.hpccsystems.recordlayout.RecordList;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.job.JobMeta;
 import org.pentaho.di.job.entry.JobEntryInterface;
 import org.pentaho.di.repository.Repository;
 import org.pentaho.di.ui.job.dialog.JobDialog;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
-
-import org.hpccsystems.eclguifeatures.AutoPopulate;
-import org.hpccsystems.eclguifeatures.ErrorNotices;
-import org.hpccsystems.ecljobentrybase.*;
-import org.hpccsystems.recordlayout.RecordLabels;
-import org.hpccsystems.recordlayout.RecordList;
 /**
  *
  * @author KeshavS
@@ -71,7 +68,8 @@ import org.hpccsystems.recordlayout.RecordList;
 public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDialog implements JobEntryDialogInterface {
 	
 	public static final String NAME = "Name";
-	public static final String[] PROP = { "Name" };
+	public static final String RULE = "Rule";
+	public static final String[] PROP = { NAME, RULE };
     private ECLCorrelation jobEntry;
     private Text jobEntryName;
     private Combo Method;
@@ -80,8 +78,7 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
     private boolean backupChanged;
     @SuppressWarnings("unused")
 	private SelectionAdapter lsDef;
-    private String fieldList;
-    java.util.List fields;
+    ArrayList<Player> fields;
     private Combo Rule;
     
     public Button chkBox;
@@ -131,7 +128,7 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
 
         shell = new Shell(parentShell, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MIN | SWT.MAX);
         fields = new ArrayList();
-        fieldList = new String();
+        
         TabFolder tab = new TabFolder(shell, SWT.FILL | SWT.RESIZE | SWT.MIN | SWT.MAX);
         FormData datatab = new FormData();
         
@@ -366,7 +363,10 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
 		        table.redraw();
 		    } 
 		});
-
+	    
+	    TableColumn tc1 = new TableColumn(table, SWT.LEFT);
+	    tc1.setText("Outlier(s)");
+	    tc1.setWidth(150);
 	    
 	    if(jobEntry.getFields() != null)
             fields = jobEntry.getFields();
@@ -624,6 +624,20 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
 								if(S[1].equalsIgnoreCase("True") && !check.contains(S[0])){
 									Player p = new Player();
 									p.setFirstName(S[0]);
+									int idx = 0;
+									if(outlierRules != null){
+										for(int i = 0; i<outlierRules.length; i++){
+											if(outlierRules[i].toLowerCase().contains(S[0].toLowerCase())){
+												idx = i;
+												break;
+											}
+										}
+										p.setRule(outlierRules[idx]);
+									}
+									else{
+										p.setRule("");
+									}
+									 
 									fields.add(p);
 									
 									
@@ -671,8 +685,11 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
             }
         });
 	    
-	    final CellEditor[] editors = new CellEditor[1];
+	    
+	    
+	    final CellEditor[] editors = new CellEditor[2];
 	    editors[0] = new TextCellEditor(table);
+	    editors[1] = new TextCellEditor(table);
 	    tv.setColumnProperties(PROP);
 	    tv.setCellModifier(new PersonCellModifier(tv));
 	    tv.setCellEditors(editors);
@@ -696,10 +713,6 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
         Listener okListener = new Listener() {
 
             public void handleEvent(Event e) {
-            	fieldList = new String();
-            	for(int i = 0; i<table.getItemCount(); i++){            
-            		fieldList += table.getItem(i).getText()+","; 
-            	}
                 ok();
             }
         };
@@ -736,10 +749,6 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
             Method.setText(jobEntry.getMethod());
         }
         
-        if(jobEntry.getFieldList() != null){
-        	fieldList = jobEntry.getFieldList();
-        }
-
         if(jobEntry.getFields() != null){
         	fields = jobEntry.getFields();
         	tv.setInput(fields);        	
@@ -802,11 +811,6 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
     		errors += "\"Dataset Name\" is a required field!\r\n";
     	}
     	
-    	if(this.fieldList.isEmpty() || this.fieldList.split(",").length == 1){
-    		isValid = false;
-    		errors += "Please Select 2 or more Fields\r\n";
-    	}
-    	
     	if(!isValid){
     		ErrorNotices en = new ErrorNotices();
     		errors += "\r\n";
@@ -826,7 +830,6 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
         jobEntry.setDatasetName(datasetName.getText());
         jobEntry.setMethod(this.Method.getText());
         jobEntry.setFields(fields);
-        jobEntry.setFieldList(this.fieldList);
         jobEntry.setRule(this.Rule.getText());
         
         if(chkBox.getSelection() && outputName != null){
@@ -855,24 +858,11 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
 }
 
 
-class Cols {
-	  private String firstName;
-
-	  public String getFirstName() {
-		  return firstName;
-	  }
-
-	  public void setFirstName(String firstName) {
-		  this.firstName = firstName;
-	  }
-
-
-}
 
 class Player { 
 	  private String firstName;
-	  private Integer coloroption;
-	  private String type;
+	  
+	  private String rule;
 
 	  public String getFirstName() {
 		  return firstName;
@@ -882,21 +872,15 @@ class Player {
 		  this.firstName = firstName;
 	  }
 
-	  public String getTy() {
-		  return type;
+	  public String getRule() {
+		  return rule;
 	  }
 
-	  public void setTy(String type) {
-		  this.type = type;
+	  public void setRule(String rule) {
+		  this.rule = rule;
 	  }
 	  
-	  public Integer getColor() {
-		  return coloroption;
-	  }
-
-	  public void setColor(Integer coloroption) {
-		  this.coloroption = coloroption;
-	  }
+	  
 }
 
 
@@ -920,6 +904,8 @@ class PlayerLabelProvider implements ITableLabelProvider {
 	  switch(arg1){
 	  case 0:
 	  	  return values.getFirstName();
+	  case 1:
+	  	  return values.getRule();
 
 	  }
 	  return null;
@@ -975,6 +961,8 @@ class PersonCellModifier implements ICellModifier {
 	    Player p = (Player) element;
 	    if (ECLCorrelationDialog.NAME.equals(property))
 	      return p.getFirstName();
+	    if (ECLCorrelationDialog.RULE.equals(property))
+		      return p.getRule();
 	    else
 	      return null;
 	  }
@@ -986,6 +974,8 @@ class PersonCellModifier implements ICellModifier {
 	    Player p = (Player) element;
 	    if (ECLCorrelationDialog.NAME.equals(property))
 	      p.setFirstName((String) value);
+	    if (ECLCorrelationDialog.RULE.equals(property))
+		      p.setRule((String) value);
 	   
 	    // Force the viewer to refresh
 	    viewer.refresh();
