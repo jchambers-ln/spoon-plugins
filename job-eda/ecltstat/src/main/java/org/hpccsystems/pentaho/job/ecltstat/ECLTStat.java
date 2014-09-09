@@ -110,7 +110,7 @@ public class ECLTStat extends ECLJobEntry {// extends JobEntryBase implements
 						
 						
 						tstat += "Stat := PROJECT(tab,Trans(LEFT,COUNTER));\n";
-						tstat += "OUTPUT(Stat,NAMED('T Statistic'));\n";
+						tstat += "OUTPUT(Stat,NAMED('TStatistic'));\n";
 					}
 					else {
 						tstat += "TReX := RECORD\n	REAL Tstat;\n REAL DF;\nEND;\n";
@@ -123,7 +123,7 @@ public class ECLTStat extends ECLJobEntry {// extends JobEntryBase implements
 						
 						
 						tstat += "Stat := PROJECT(tab,Trans(LEFT,COUNTER));\n";
-						tstat += "OUTPUT(Stat,NAMED('T Statistic'));\n";
+						tstat += "OUTPUT(Stat,NAMED('TStatistic'));\n";
 					}
 				}
 				else{
@@ -134,7 +134,7 @@ public class ECLTStat extends ECLJobEntry {// extends JobEntryBase implements
 					tstat += "tab := TABLE("+getDatasetName()+",TRec);\n";
 					tstat += "TReX := RECORD\n	REAL Tstat;\n REAL DF;\nEND;\n";
 					tstat += "TReX Trans(tab L, INTEGER C) := TRANSFORM\n	" +
-							 "	SELF.Tstat := ABS((L.m1 - "+getMew()+")/(  SQRT((L.var1)  *  SQRT(1/L.n1)  ));\n" +
+							 "	SELF.Tstat := ABS((L.m1 - "+getMew()+")/(  SQRT((L.var1)  *  SQRT(1/L.n1)  )));\n" +
 							 "	SELF.DF := L.n1 - 1;\nEND;\n";
 				}
 			}
@@ -148,12 +148,12 @@ public class ECLTStat extends ECLJobEntry {// extends JobEntryBase implements
 			
 				tstat += "TReX := RECORD\n	REAL Tstat;\n REAL DF;\nEND;\n";
 				tstat += "TReX Trans(tab L, INTEGER C) := TRANSFORM\n	" +
-						 "	SELF.Tstat := ABS((L.m1 - L.m2)/( SQRT((L.var1)  *  SQRT(1/L.n1)  ));\n" +
+						 "	SELF.Tstat := ABS((L.m1 - L.m2)/( SQRT((L.var1)  *  SQRT(1/L.n1)  )));\n" +
 						 "	SELF.DF := L.n1 - 1;\nEND;\n";
 				
 				
 				tstat += "Stat := PROJECT(tab,Trans(LEFT,COUNTER));\n";
-				tstat += "OUTPUT(Stat,NAMED('T Statistic'));\n";
+				tstat += "OUTPUT(Stat,NAMED('TStatistic'));\n";
 			
 			}
 			
