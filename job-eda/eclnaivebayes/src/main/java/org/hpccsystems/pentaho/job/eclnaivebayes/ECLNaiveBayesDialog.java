@@ -2,13 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.hpccsystems.pentaho.job.eclcorrelation;
+package org.hpccsystems.pentaho.job.eclnaivebayes;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -65,37 +66,28 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
  *
  * @author KeshavS
  */
-public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDialog implements JobEntryDialogInterface {
+public class ECLNaiveBayesDialog extends ECLJobEntryDialog{//extends JobEntryDialog implements JobEntryDialogInterface {
 	
 	public static final String NAME = "Name";
-	public static final String RULE = "Rule";
-	public static final String[] PROP = { NAME, RULE };
-    private ECLCorrelation jobEntry;
+	public static final String DEP = "Dependance";
+	public static final String INDEX = "Index";
+	public static final String[] PROP = { NAME, DEP, INDEX };
+    private ECLNaiveBayes jobEntry;
     private Text jobEntryName;
-    private Combo Method;
     private Combo datasetName;
     private Button wOK, wCancel;
     private boolean backupChanged;
     @SuppressWarnings("unused")
 	private SelectionAdapter lsDef;
-    ArrayList<Player> fields;
-    private Combo Rule;
+    java.util.List fields;
+    private Combo Accuracy;
+    private Combo Precision;
     
-    public Button chkBox;
-    public static Text outputName;
-    public static Label label;
-    private String persist;
-    private Composite composite;
-    private String defJobName;
-    
-    String outlierRules[] = null;
-    //private List outlierRules  = new ArrayList();
-    
-    public ECLCorrelationDialog(Shell parent, JobEntryInterface jobEntryInt, Repository rep, JobMeta jobMeta) {
+    public ECLNaiveBayesDialog(Shell parent, JobEntryInterface jobEntryInt, Repository rep, JobMeta jobMeta) {
         super(parent, jobEntryInt, rep, jobMeta);
-        jobEntry = (ECLCorrelation) jobEntryInt;
+        jobEntry = (ECLNaiveBayes) jobEntryInt;
         if (this.jobEntry.getName() == null) {
-            this.jobEntry.setName("Correlation");
+            this.jobEntry.setName("Regression");
         }
     }
 
@@ -104,31 +96,19 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
         final Display display = parentShell.getDisplay();
         
         String datasets[] = null;
-        String outlRules[] = null;
 
         final AutoPopulate ap = new AutoPopulate();
         try{
             datasets = ap.parseDatasetsRecordsets(this.jobMeta.getJobCopies());
-            defJobName = ap.getGlobalVariable(this.jobMeta.getJobCopies(), "jobName");
-
         }catch (Exception e){
             System.out.println("Error Parsing existing Datasets");
             System.out.println(e.toString());
             datasets = new String[]{""};
         }
         
-        try{
-        	outlRules = ap.parseOutlierRules(this.jobMeta.getJobCopies());
-        	//outlierRules = Arrays.asList(outlRules);
-        }catch (Exception e){
-            System.out.println("Error Parsing existing outlier rules");
-            System.out.println(e.toString());
-            outlRules = new String[]{""};
-        }
 
         shell = new Shell(parentShell, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MIN | SWT.MAX);
         fields = new ArrayList();
-        
         TabFolder tab = new TabFolder(shell, SWT.FILL | SWT.RESIZE | SWT.MIN | SWT.MAX);
         FormData datatab = new FormData();
         
@@ -162,7 +142,7 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
         int margin = Const.MARGIN;
         
 		shell.setLayout(layout);
-		shell.setText("Correlation");
+		shell.setText("Regression");
 		
 		FormLayout groupLayout = new FormLayout();
         groupLayout.marginWidth = 10;
@@ -184,10 +164,6 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
 		
 		jobEntryName = buildText("Job Entry Name :", null, lsMod, middle, margin, generalGroup);
 		
-        
-		
-        
-        
         Group fieldsGroup = new Group(compForGrp, SWT.SHADOW_NONE);
         props.setLook(fieldsGroup);
         fieldsGroup.setText("Details");
@@ -195,113 +171,17 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
         FormData fieldsGroupFormat = new FormData();
         fieldsGroupFormat.top = new FormAttachment(generalGroup, margin);
         fieldsGroupFormat.width = 340;
-        fieldsGroupFormat.height = 100;
+        fieldsGroupFormat.height = 250;
         fieldsGroupFormat.left = new FormAttachment(middle, 0);
         fieldsGroupFormat.right = new FormAttachment(100, 0);
         fieldsGroup.setLayoutData(fieldsGroupFormat);
         
-        Group ruleGroup = new Group(compForGrp, SWT.SHADOW_NONE);
-        props.setLook(ruleGroup);
-        ruleGroup.setText("Outlier Rule");
-        ruleGroup.setLayout(groupLayout);
-        FormData ruleFormData = new FormData();
-        ruleFormData.top = new FormAttachment(fieldsGroup, margin);
-        ruleFormData.width = 340;
-        ruleFormData.height = 65;
-        ruleFormData.left = new FormAttachment(middle, 0);
-        ruleFormData.right = new FormAttachment(100, 0);
-        ruleGroup.setLayoutData(ruleFormData);
-
+        datasetName = buildCombo("Dataset Name:", jobEntryName, lsMod, middle, margin, fieldsGroup, datasets);
+        Precision = buildCombo("Precision : ", datasetName, lsMod, middle, margin, fieldsGroup,new String[]{"YES","NO"});
+        Accuracy = buildCombo("Accuracy : ", Precision, lsMod, middle, margin, fieldsGroup,new String[]{"YES","NO"});	
+        Precision.setText("NO");
+        Accuracy.setText("NO");
         
-        Method = buildCombo("Method:", jobEntryName, lsMod, middle, margin, fieldsGroup, new String[]{"Pearson", "Spearman"});
-        datasetName = buildCombo("Dataset Name:", Method, lsMod, middle, margin, fieldsGroup, datasets);
-        
-		String rul = "";
-		for(int i=0; i<outlRules.length; i++){
-			rul += "|";
-			rul += outlRules[i];
-		}
-		outlierRules = rul.split("\\|");
-		
-	        Rule = buildCombo("Rule:", jobEntryName, lsMod, middle, margin, ruleGroup, outlierRules );
-		    //Rule = new Combo(ruleGroup, SWT.DROP_DOWN);
-		    //Rule.select(arg0)
-		    //Rule.setText("Select an Outlier Rule");
-			Rule.setItems(outlierRules);
-			//Rule.setItems(new String[]{rul,"test"});
-		
-			 //Begin
-	        
-	        Group perGroup = new Group(compForGrp, SWT.SHADOW_NONE);
-	        props.setLook(perGroup);
-	        perGroup.setText("Persist");
-	        perGroup.setLayout(groupLayout);
-	        FormData perGroupFormat = new FormData();
-	        perGroupFormat.top = new FormAttachment(ruleGroup, margin);
-	        perGroupFormat.width = 340;
-	        perGroupFormat.height = 80;
-	        perGroupFormat.left = new FormAttachment(middle, 0);
-	        perGroupFormat.right = new FormAttachment(100, 0);
-	        perGroup.setLayoutData(perGroupFormat);
-	        
-	        composite = new Composite(perGroup, SWT.NONE);
-	        composite.setLayout(new FormLayout());
-	        composite.setBackground(new Color(null, 255, 255, 255));
-
-	        final Composite composite_1 = new Composite(composite, SWT.NONE);
-	        composite_1.setLayout(new GridLayout(2, false));
-	        final FormData fd_composite_1 = new FormData();
-	        fd_composite_1.top = new FormAttachment(0);
-	        fd_composite_1.left = new FormAttachment(0, 10);
-	        fd_composite_1.bottom = new FormAttachment(0, 34);
-	        fd_composite_1.right = new FormAttachment(0, 390);
-	        composite_1.setLayoutData(fd_composite_1);
-	        composite_1.setBackground(new Color(null, 255, 255, 255));
-	        
-	        label = new Label(composite_1, SWT.NONE);
-	        label.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-	        label.setText("Logical Name:");
-	        label.setBackground(new Color(null, 255, 255, 255));
-
-	        outputName = new Text(composite_1, SWT.BORDER);
-	        outputName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-	        outputName.setEnabled(false);
-	        if(jobEntry.getPersistOutputChecked()!= null && jobEntry.getPersistOutputChecked().equals("true")){
-	        	outputName.setEnabled(true);
-	        }
-	        
-	        final Composite composite_2 = new Composite(composite, SWT.NONE);
-	        composite_2.setLayout(new GridLayout(1, false));
-	        final FormData fd_composite_2 = new FormData();
-	        fd_composite_2.top = new FormAttachment(0, 36);
-	        fd_composite_2.bottom = new FormAttachment(100, 0);
-	        fd_composite_2.right = new FormAttachment(0, 390);
-	        fd_composite_2.left = new FormAttachment(0, 10);
-	        composite_2.setLayoutData(fd_composite_2);
-	        composite_2.setBackground(new Color(null, 255, 255, 255));
-
-	        chkBox = new Button(composite_2, SWT.CHECK);
-	        chkBox.setText("Persist Ouput");
-	        chkBox.setBackground(new Color(null, 255, 255, 255));
-	        
-	        chkBox.addSelectionListener(new SelectionAdapter() {
-	            @Override
-	            public void widgetSelected(SelectionEvent e) {
-	            	Button button = (Button) e.widget;
-	            	if(button.getSelection()){
-	            		persist = "true";
-	            		outputName.setEnabled(true);
-	            	}
-	            	else{
-	            		persist = "false";
-	            		outputName.setText("");
-	            		outputName.setEnabled(false);
-	            	}
-
-	            }
-	        });
-	        //End 	
-			
 		item1.setControl(compForGrp);	
         
         TabItem item2 = new TabItem(tab, SWT.NULL);
@@ -363,9 +243,8 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
 		        table.redraw();
 		    } 
 		});
-	    
-	    TableColumn tc1 = new TableColumn(table, SWT.LEFT);
-	    tc1.setText("Outlier(s)");
+	    final TableColumn tc1 = new TableColumn(table, SWT.CENTER);
+	    tc1.setText("Dependance");
 	    tc1.setWidth(150);
 	    
 	    if(jobEntry.getFields() != null)
@@ -527,7 +406,7 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
                              System.out.println("Frequency Cant look up column type");
                       }
                       
-                      field.add(new String[]{rec.getRecords().get(i).getColumnName().toLowerCase(),"false",type+width});
+                      field.add(new String[]{rec.getRecords().get(i).getColumnName().toLowerCase(),"false",type+width,Integer.toString(i)});
                 }
 	              
 	              
@@ -592,20 +471,22 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
 			    	    		 ((TreeItem)event.item).setChecked(false);
 			    	    	 String st = ((TreeItem)event.item).getText(0);
 			    	    	 String type = ((TreeItem)event.item).getText(1);
+			    	    	 String ind = "radical";
 			    	    	 boolean f = ((TreeItem)event.item).getChecked();
 			 	   	      	 int idx = 0; 
 			 	   	      	 for(Iterator<String[]> it2 = field.iterator(); it2.hasNext(); ){
 			 	   	     	 	 String[] s = it2.next();
 			 	   	     		 if(s[0].equalsIgnoreCase(st)){
 			 	   	     				idx = field.indexOf(s);
+			 	   	     				ind = s[3];
 			 	   	     				break;
 			 	   	     		 }
 			 	   	     	 }
 			 	   	     	 field.remove(idx);
 			 	   	     	 if(f)
-			 	   	     		 field.add(idx,new String[]{st,"true",type});
+			 	   	     		 field.add(idx,new String[]{st,"true",type,ind});
 			 	   	     	 else
-			 	   	     		 field.add(idx,new String[]{st,"false",type});
+			 	   	     		 field.add(idx,new String[]{st,"false",type,ind});
 			    	   	}
 			       });
 			        
@@ -624,20 +505,8 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
 								if(S[1].equalsIgnoreCase("True") && !check.contains(S[0])){
 									Player p = new Player();
 									p.setFirstName(S[0]);
-									int idx = 0;
-									if(outlierRules != null){
-										for(int i = 0; i<outlierRules.length; i++){
-											if(outlierRules[i].toLowerCase().contains(S[0].toLowerCase())){
-												idx = i;
-												break;
-											}
-										}
-										p.setRule(outlierRules[idx]);
-									}
-									else{
-										p.setRule("");
-									}
-									 
+									p.setDependance(Integer.valueOf("0")); 
+									p.setIndex(S[3]);
 									fields.add(p);
 									
 									
@@ -685,11 +554,9 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
             }
         });
 	    
-	    
-	    
 	    final CellEditor[] editors = new CellEditor[2];
 	    editors[0] = new TextCellEditor(table);
-	    editors[1] = new TextCellEditor(table);
+	    editors[1] = new ComboBoxCellEditor(table, DepOption.INSTANCES, SWT.READ_ONLY); 
 	    tv.setColumnProperties(PROP);
 	    tv.setCellModifier(new PersonCellModifier(tv));
 	    tv.setCellEditors(editors);
@@ -745,39 +612,19 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
             datasetName.setText(jobEntry.getDatasetName());
         }
         
-        if (jobEntry.getMethod() != null) {
-            Method.setText(jobEntry.getMethod());
+        if (jobEntry.getPrecision() != null) {
+            Precision.setText(jobEntry.getPrecision());
+        }
+        
+        if (jobEntry.getAccuracy() != null) {
+            Accuracy.setText(jobEntry.getAccuracy());
         }
         
         if(jobEntry.getFields() != null){
         	fields = jobEntry.getFields();
         	tv.setInput(fields);        	
         }
-        
-        if(jobEntry.getRule() != null){
-        	Rule.setText(jobEntry.getRule());
-        }
-        
-        if (jobEntry.getPersistOutputChecked() != null && chkBox != null) {
-        	chkBox.setSelection(jobEntry.getPersistOutputChecked().equals("true")?true:false);
-        }
-        
-        if(chkBox != null && chkBox.getSelection()){
-        	for (Control control : composite_1.getChildren()) {
-        		if(!control.isDisposed()){
-					if (jobEntry.getOutputName() != null && outputName != null) {
-			        	outputName.setText(jobEntry.getOutputName());
-					}
-					if (jobEntry.getLabel() != null && label != null) {
-			    		label.setText(jobEntry.getLabel());
-					}
-        		}
-        	}
-		}
-        if(jobEntry.getDefJobName() != null){
-        	defJobName = jobEntry.getDefJobName();
-        }
-        
+                
         shell.pack();
         shell.open();
         while (!shell.isDisposed()) {
@@ -799,11 +646,6 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
     	if(this.jobEntryName.getText().equals("")){
     		isValid = false;
     		errors += "\"Job Entry Name\" is a required field!\r\n";
-    	}
-    	
-    	if(this.Method.getText().equals("")){
-    		isValid = false;
-    		errors += "\"Method\" is a required field!\r\n";
     	}
     	
     	if(this.datasetName.getText().equals("")){
@@ -828,23 +670,9 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
     	
         jobEntry.setName(jobEntryName.getText());
         jobEntry.setDatasetName(datasetName.getText());
-        jobEntry.setMethod(this.Method.getText());
+        jobEntry.setPrecision(Precision.getText());
+        jobEntry.setAccuracy(Accuracy.getText());
         jobEntry.setFields(fields);
-        jobEntry.setRule(this.Rule.getText());
-        
-        if(chkBox.getSelection() && outputName != null){
-        	jobEntry.setOutputName(outputName.getText());
-        }
-        if(chkBox.getSelection() && label != null){
-        	jobEntry.setLabel(label.getText());
-        }
-        if(chkBox != null){
-        	jobEntry.setPersistOutputChecked(chkBox.getSelection()?"true":"false");
-        }
-        if(defJobName.trim().equals("")){
-        	defJobName = "Spoon-job";
-        }
-        jobEntry.setDefJobName(defJobName);
         
         dispose();
     }
@@ -858,11 +686,8 @@ public class ECLCorrelationDialog extends ECLJobEntryDialog{//extends JobEntryDi
 }
 
 
-
-class Player { 
+class Cols {
 	  private String firstName;
-	  
-	  private String rule;
 
 	  public String getFirstName() {
 		  return firstName;
@@ -872,16 +697,42 @@ class Player {
 		  this.firstName = firstName;
 	  }
 
-	  public String getRule() {
-		  return rule;
+
+}
+
+class Player { 
+	  private String firstName;
+	  private Integer dependance;
+	  private String index;
+	  
+	  
+	  
+	  public String getIndex() {
+		return index;
+	}
+
+	public void setIndex(String index) {
+		this.index = index;
+	}
+
+	public Integer getDependance() {
+		return dependance;
+	}
+
+	public void setDependance(Integer dependance) {
+		this.dependance = dependance;
+	}
+
+	public String getFirstName() {
+		  return firstName;
 	  }
 
-	  public void setRule(String rule) {
-		  this.rule = rule;
+	  public void setFirstName(String firstName) {
+		  this.firstName = firstName;
 	  }
-	  
-	  
-}
+
+	  	  
+	  }
 
 
 
@@ -905,7 +756,9 @@ class PlayerLabelProvider implements ITableLabelProvider {
 	  case 0:
 	  	  return values.getFirstName();
 	  case 1:
-	  	  return values.getRule();
+		  return DepOption.INSTANCES[values.getDependance().intValue()];
+	  case 2:
+		  return values.getIndex();
 
 	  }
 	  return null;
@@ -959,10 +812,12 @@ class PersonCellModifier implements ICellModifier {
 	  }
 	  public Object getValue(Object element, String property) {
 	    Player p = (Player) element;
-	    if (ECLCorrelationDialog.NAME.equals(property))
+	    if (ECLNaiveBayesDialog.NAME.equals(property))
 	      return p.getFirstName();
-	    if (ECLCorrelationDialog.RULE.equals(property))
-		      return p.getRule();
+	    if (ECLNaiveBayesDialog.DEP.equals(property))
+		      return p.getDependance();
+	    if (ECLNaiveBayesDialog.INDEX.equals(property))
+		      return p.getIndex();
 	    else
 	      return null;
 	  }
@@ -972,12 +827,22 @@ class PersonCellModifier implements ICellModifier {
 	      element = ((Item) element).getData();
 
 	    Player p = (Player) element;
-	    if (ECLCorrelationDialog.NAME.equals(property))
+	    if (ECLNaiveBayesDialog.NAME.equals(property))
 	      p.setFirstName((String) value);
-	    if (ECLCorrelationDialog.RULE.equals(property))
-		      p.setRule((String) value);
-	   
+	    else if (ECLNaiveBayesDialog.DEP.equals(property))
+		      p.setDependance((Integer) value);
+	    if (ECLNaiveBayesDialog.INDEX.equals(property))
+		      p.setIndex((String) value);
 	    // Force the viewer to refresh
 	    viewer.refresh();
 	  }
+}
+
+class DepOption {
+
+	  public static final String Dep = "DEPENDANT";
+	  
+	  public static final String Indep = "INDEPENDANT";
+
+	  public final static String[] INSTANCES = { Indep, Dep};
 }
