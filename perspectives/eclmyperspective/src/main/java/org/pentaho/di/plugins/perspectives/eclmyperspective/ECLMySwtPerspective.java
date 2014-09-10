@@ -116,32 +116,35 @@ private String[] filePath;
   }
   
   private ECLMySwtPerspective(){  
-   // System.out.println("create eclResults ECLResultsSwtPerspective");
-    createUI();
+   // System.out.println("called ECLMySwtPerspective");
+    //createUI();
   }
 
   private void createUI(){
+	 // System.out.println("Called createUI");
+	  if(comp == null){
+		  parentShell = ((Spoon) SpoonFactory.getInstance()).getShell();
+          
+          Display display = parentShell.getDisplay();
+	       comp = new Composite(parentShell, SWT.BORDER);
+	       
+	       GridLayout gl = new GridLayout();
+	       
+	       comp.setLayout(gl);
+	       GridData gd = new GridData(SWT.FILL,SWT.FILL,true,true);
+	       comp.setLayoutData(gd);
 	  
-	  parentShell = ((Spoon) SpoonFactory.getInstance()).getShell();
-	    
-	  display = parentShell.getDisplay();
 
-	  comp = new Composite(((Spoon) SpoonFactory.getInstance()).getShell(), SWT.BORDER);
-	  comp.setLayout(new GridLayout());
-	  comp.setLayoutData(new GridData(GridData.FILL_BOTH));
 	  
-	  //CTabItem tab2 = new CTabItem(folder, SWT.NONE);
-    	//tab2.setText("jus' checkin'");
-	  
-		folder = new CTabFolder(comp, SWT.CLOSE);
-		folder.setSimple(false);
-		folder.setBorderVisible(true);
-		folder.setLayoutData(new GridData(GridData.FILL_BOTH));
+	  	 folder = new CTabFolder(comp, SWT.CLOSE);
+	     folder.setSimple(false);
+	     folder.setBorderVisible(true);
+	     folder.setLayoutData(new GridData(GridData.FILL_BOTH));
     	//Label lbl = new Label(folder, SWT.NONE);
     	//lbl.setText("hjgghjghjg");
 	  
     	
-    
+	  }
 	  
   }
   public void buildgui(final String fileName) throws Exception{
@@ -150,7 +153,7 @@ private String[] filePath;
 		wuidTab.setText("Jo hai so yehi hai!");
 		
 		folder.setSelection(folder.indexOf(wuidTab));
-		 System.out.println("BUILDTAB--------" + folder.indexOf(wuidTab));
+		// System.out.println("BUILDTAB--------" + folder.indexOf(wuidTab));
 		Composite tabHolder = new Composite(folder, SWT.NONE);
 		tabHolder.setLayout(new GridLayout(1,false));
 		tabHolder.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -313,7 +316,7 @@ private String[] filePath;
 			          // Get the selected items in the drag source
 			          DragSource ds = (DragSource) event.widget;
 			          Tree tab = (Tree) ds.getControl();
-			          System.out.println(tab); 
+			         // System.out.println(tab); 
 			          TreeItem[] selection = tree.getSelection();
 
 			          StringBuffer buff = new StringBuffer();
@@ -391,7 +394,7 @@ private String[] filePath;
             	int idx = c1.getSelectionIndex(); 
             	
             	fileName1 = filePath[idx];
-            	System.out.println(fileName1); 
+            	//System.out.println(fileName1); 
             	tree.setItemCount(0);
             	CSVReader reader = null;
 				try {
@@ -414,7 +417,7 @@ private String[] filePath;
                 // Get the object of DataInputStream
                 DataInputStream in = new DataInputStream(fstream);
                 BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                System.out.println(br); 
+               // System.out.println(br); 
 
                 
                 
@@ -596,7 +599,7 @@ private String[] filePath;
 			public void handleEvent(Event arg0) {
 				int choice = cx.getSelectionIndex();
 				if(table != null){
-					System.out.println(columns.size()); 
+					//System.out.println(columns.size()); 
 					table.setItemCount(0);
 					table.setRedraw(false);
 					while ( table.getColumnCount() > 0 ) {
@@ -605,7 +608,7 @@ private String[] filePath;
 					table.setRedraw(true);			
 				}
 				if(!fileName1.equals("")){
-					System.out.println(fileName1); 
+					//System.out.println(fileName1); 
 					
 					CSVReader reader = null;
 					try {
@@ -626,7 +629,7 @@ private String[] filePath;
 		            // Get the object of DataInputStream
 		            DataInputStream in = new DataInputStream(fstream);
 		            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-		            System.out.println(br); 
+		          //  System.out.println(br); 
 		            int length = 0;
 		            boolean first = true;
 		            boolean header = false;
@@ -927,13 +930,17 @@ private String[] filePath;
       //logic is here so it doesn't reload the data when leaving this perspective
 	  //folder.setSelection(folder.getItemCount()-1);
 	  if(b){
+		  System.out.println("Is B");
 		  if(!this.isActive){
+			  System.out.println("Is Active");
 			  if(System.getProperties().getProperty("resultsFile") != null && !System.getProperties().getProperty("resultsFile").equals("")){
 				  String xmlFile = System.getProperties().getProperty("resultsFile");
 				  ArrayList<String> resultFiles = parseData("resultsFile");
 				  for(int i =0; i< resultFiles.size(); i++){
 					  try {
+						  System.out.println("Buildgui start call");
 						buildgui(resultFiles.get(i));
+						 System.out.println("Buildgui end call");
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -950,7 +957,7 @@ private String[] filePath;
 		 }
        
    }else{
-        System.out.println("create eclResults setActive -- deactivate");
+        System.out.println("create eclmyperspective setActive -- deactivate");
    }
 	  
   }
@@ -1004,12 +1011,12 @@ private String[] filePath;
   
   // Whatever you pass out will be reparented. Don't construct the UI in this method as it may be called more than once.
   public Composite getUI() {
-       //System.out.println("getUI");
-    return comp;
+       System.out.println("getUI");
+       createUI();
+       return comp;
   }
 
   public String getDisplayName(Locale locale) {
-       //System.out.println("getDisplayName");
     return "ECL Reporting";
   }
 
