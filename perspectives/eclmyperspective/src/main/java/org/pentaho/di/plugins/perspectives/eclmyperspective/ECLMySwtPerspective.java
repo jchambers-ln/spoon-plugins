@@ -89,7 +89,7 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class ECLMySwtPerspective implements SpoonPerspective {
 
-  private Composite comp;
+  private Composite comp = null;
   private static ECLMySwtPerspective instance = new ECLMySwtPerspective();
   ArrayList<String[]> columns = new ArrayList<String[]>();
   ArrayList<String> map = new ArrayList<String>();
@@ -116,44 +116,39 @@ private String[] filePath;
   }
   
   private ECLMySwtPerspective(){  
-   // System.out.println("called ECLMySwtPerspective");
+   System.out.println("create eclResults ECLResultsSwtPerspective");
     //createUI();
+   //getUI();
   }
 
-  private void createUI(){
-	 // System.out.println("Called createUI");
-	  if(comp == null){
-		  parentShell = ((Spoon) SpoonFactory.getInstance()).getShell();
-          
-          Display display = parentShell.getDisplay();
-	       comp = new Composite(parentShell, SWT.BORDER);
-	       
-	       GridLayout gl = new GridLayout();
-	       
-	       comp.setLayout(gl);
-	       GridData gd = new GridData(SWT.FILL,SWT.FILL,true,true);
-	       comp.setLayoutData(gd);
+/*  private void createUI(){
 	  
+	  parentShell = ((Spoon) SpoonFactory.getInstance()).getShell();
+	    
+	  display = parentShell.getDisplay();
 
+	  comp = new Composite(((Spoon) SpoonFactory.getInstance()).getShell(), SWT.BORDER);
+	  comp.setLayout(new GridLayout());
+	  comp.setLayoutData(new GridData(GridData.FILL_BOTH));
 	  
-	  	 folder = new CTabFolder(comp, SWT.CLOSE);
-	     folder.setSimple(false);
-	     folder.setBorderVisible(true);
-	     folder.setLayoutData(new GridData(GridData.FILL_BOTH));
+	  //CTabItem tab2 = new CTabItem(folder, SWT.NONE);
+    	//tab2.setText("jus' checkin'");
+	  
+		folder = new CTabFolder(comp, SWT.CLOSE);
+		folder.setSimple(false);
+		folder.setBorderVisible(true);
+		folder.setLayoutData(new GridData(GridData.FILL_BOTH));
     	//Label lbl = new Label(folder, SWT.NONE);
     	//lbl.setText("hjgghjghjg");
-	  
-    	
-	  }
-	  
   }
+*/
   public void buildgui(final String fileName) throws Exception{
 	  String file = ""; 
 	  CTabItem wuidTab = new CTabItem(folder, SWT.NONE);
-		wuidTab.setText("Jo hai so yehi hai!");
+		wuidTab.setText("Report");
 		
 		folder.setSelection(folder.indexOf(wuidTab));
-		// System.out.println("BUILDTAB--------" + folder.indexOf(wuidTab));
+		 System.out.println("BUILDTAB--------" + folder.indexOf(wuidTab));
 		Composite tabHolder = new Composite(folder, SWT.NONE);
 		tabHolder.setLayout(new GridLayout(1,false));
 		tabHolder.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -162,11 +157,13 @@ private String[] filePath;
 		//lbl.setText(fileName);
 		//lbl.setLayoutData(new GridData(GridData.FILL));
 		
+		
+		
 		ToolBar toolBar = new ToolBar(tabHolder, SWT.FLAT | SWT.WRAP | SWT.RIGHT);
 	    
 	    ToolItem itemPush = new ToolItem(toolBar, SWT.PUSH);
 	    itemPush.setToolTipText("Open");
-	    Image icon1 = new Image(tabHolder.getDisplay(), "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\open.png");
+	    Image icon1 = new Image(tabHolder.getDisplay(), "./ui/images/open.png");//D:/Users/703119704/Documents/spoon-plugins/spoon-plugins/perspectives/eclmyperspective/
 	    itemPush.setImage(icon1);
 	    itemPush.addListener(SWT.Selection, new Listener(){
 
@@ -182,7 +179,7 @@ private String[] filePath;
 	    
 	    ToolItem itemSave = new ToolItem(toolBar, SWT.PUSH);
 	    itemSave.setToolTipText("Save As PDF");
-	    Image icon2 = new Image(tabHolder.getDisplay(), "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\save.png");
+	    Image icon2 = new Image(tabHolder.getDisplay(), "./ui/images/save.png");//src/main/resources/plugin/
 	    itemSave.setImage(icon2);	    	    	   
 	    
 	    toolBar.pack();
@@ -230,15 +227,15 @@ private String[] filePath;
 		
 		ToolItem item = new ToolItem(tc, SWT.PUSH);
 	    item.setToolTipText("Print PDF");
-	    Image icon = new Image(display, "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\print.png");
+	    Image icon = new Image(display, "./ui/images/print.png");//src/main/resources/plugin/
 	    item.setImage(icon);
 	    item = new ToolItem(tc, SWT.PUSH);
 	    item.setToolTipText("Save");
-	    icon = new Image(display, "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\save.png");
+	    icon = new Image(display, "./ui/images/save.png");//src/main/resources/plugin/
 	    item.setImage(icon);
 	    item = new ToolItem(tc, SWT.PUSH);
 	    item.setToolTipText("Save As");
-	    icon = new Image(display, "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\saveas.png");
+	    icon = new Image(display, "./ui/images/saveas.png");//src/main/resources/plugin/
 	    item.setImage(icon);
 	    
 		/*Composite Graph = new Composite(three, SWT.NONE | SWT.BORDER);
@@ -277,9 +274,10 @@ private String[] filePath;
 			    toolBar1.setLayoutData(new GridData(GridData.CENTER));
 				
 			    
+			    
 			    ToolItem itemPush1 = new ToolItem(toolBar1, SWT.PUSH);
 			    itemPush1.setToolTipText("Close");
-			    Image icon11 = new Image(display, "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\close-panel.png");
+			    Image icon11 = new Image(display, "./ui/images/close-panel.png");//src/main/resources/plugin/
 			    itemPush1.setImage(icon11);
 			    
 			    
@@ -316,7 +314,7 @@ private String[] filePath;
 			          // Get the selected items in the drag source
 			          DragSource ds = (DragSource) event.widget;
 			          Tree tab = (Tree) ds.getControl();
-			         // System.out.println(tab); 
+			          System.out.println(tab); 
 			          TreeItem[] selection = tree.getSelection();
 
 			          StringBuffer buff = new StringBuffer();
@@ -394,7 +392,7 @@ private String[] filePath;
             	int idx = c1.getSelectionIndex(); 
             	
             	fileName1 = filePath[idx];
-            	//System.out.println(fileName1); 
+            	System.out.println(fileName1); 
             	tree.setItemCount(0);
             	CSVReader reader = null;
 				try {
@@ -417,7 +415,7 @@ private String[] filePath;
                 // Get the object of DataInputStream
                 DataInputStream in = new DataInputStream(fstream);
                 BufferedReader br = new BufferedReader(new InputStreamReader(in));
-               // System.out.println(br); 
+                System.out.println(br); 
 
                 
                 
@@ -599,7 +597,7 @@ private String[] filePath;
 			public void handleEvent(Event arg0) {
 				int choice = cx.getSelectionIndex();
 				if(table != null){
-					//System.out.println(columns.size()); 
+					System.out.println(columns.size()); 
 					table.setItemCount(0);
 					table.setRedraw(false);
 					while ( table.getColumnCount() > 0 ) {
@@ -608,7 +606,7 @@ private String[] filePath;
 					table.setRedraw(true);			
 				}
 				if(!fileName1.equals("")){
-					//System.out.println(fileName1); 
+					System.out.println(fileName1); 
 					
 					CSVReader reader = null;
 					try {
@@ -629,7 +627,7 @@ private String[] filePath;
 		            // Get the object of DataInputStream
 		            DataInputStream in = new DataInputStream(fstream);
 		            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-		          //  System.out.println(br); 
+		            System.out.println(br); 
 		            int length = 0;
 		            boolean first = true;
 		            boolean header = false;
@@ -930,23 +928,19 @@ private String[] filePath;
       //logic is here so it doesn't reload the data when leaving this perspective
 	  //folder.setSelection(folder.getItemCount()-1);
 	  if(b){
-		  System.out.println("Is B");
 		  if(!this.isActive){
-			  System.out.println("Is Active");
-			  if(System.getProperties().getProperty("resultsFile") != null && !System.getProperties().getProperty("resultsFile").equals("")){
-				  String xmlFile = System.getProperties().getProperty("resultsFile");
-				  ArrayList<String> resultFiles = parseData("resultsFile");
+			  if(System.getProperties().getProperty("reportFile") != null && !System.getProperties().getProperty("reportFile").equals("")){
+				  String xmlFile = System.getProperties().getProperty("reportFile");
+				  ArrayList<String> resultFiles = parseData("reportFile");
 				  for(int i =0; i< resultFiles.size(); i++){
 					  try {
-						  System.out.println("Buildgui start call");
 						buildgui(resultFiles.get(i));
-						 System.out.println("Buildgui end call");
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				  }
-				  //System.getProperties().setProperty("resultsFile","");      	
+				  System.getProperties().setProperty("reportFile","");      	
 			  }	
 			  int len = folder.getItemCount();
 			  folder.setSelection(len-1);
@@ -957,7 +951,7 @@ private String[] filePath;
 		 }
        
    }else{
-        System.out.println("create eclmyperspective setActive -- deactivate");
+        System.out.println("create eclReporting setActive -- deactivate");
    }
 	  
   }
@@ -1011,12 +1005,41 @@ private String[] filePath;
   
   // Whatever you pass out will be reparented. Don't construct the UI in this method as it may be called more than once.
   public Composite getUI() {
-       System.out.println("getUI");
-       createUI();
-       return comp;
+      System.out.println("getUI");
+	  if(comp == null){
+		  parentShell = ((Spoon) SpoonFactory.getInstance()).getShell();
+		    
+		  display = parentShell.getDisplay();
+
+		  comp = new Composite(parentShell, SWT.BORDER);
+		  comp.setLayout(new GridLayout());
+		  GridData gd = new GridData(SWT.FILL,SWT.FILL,true,true);
+		  comp.setLayoutData(gd);
+
+		  //comp.setLayoutData(new GridData(GridData.FILL_BOTH));
+		  
+		  //CTabItem tab2 = new CTabItem(folder, SWT.NONE);
+	    	//tab2.setText("jus' checkin'");
+		  
+		  lbl = new Label(comp, SWT.CENTER | SWT.TOP);
+	      
+	       GridData ldata = new GridData(SWT.CENTER, SWT.TOP, true, false);
+	       lbl.setLayoutData(ldata);
+	       lbl.setText("Create Your Reports Here"); 
+		  
+			folder = new CTabFolder(comp, SWT.CLOSE);
+			folder.setSimple(false);
+			folder.setBorderVisible(true);
+			folder.setLayoutData(new GridData(GridData.FILL_BOTH));
+	    	//Label lbl = new Label(folder, SWT.NONE);
+	    	//lbl.setText("hjgghjghjg");
+		  
+	  }
+    return comp;
   }
 
   public String getDisplayName(Locale locale) {
+       //System.out.println("getDisplayName");
     return "ECL Reporting";
   }
 

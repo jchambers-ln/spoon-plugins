@@ -51,7 +51,7 @@ import org.pentaho.di.ui.job.dialog.JobDialog;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 /**
  *
- * @author ChambersJ
+ * @author KeshavS
  */
 public class ECLLibraryBuilderDialog extends ECLJobEntryDialog{//extends JobEntryDialog implements JobEntryDialogInterface {
 
@@ -147,7 +147,7 @@ public class ECLLibraryBuilderDialog extends ECLJobEntryDialog{//extends JobEntr
         /*File f = new File("C:\\Program Files\\data-integration\\plugins\\hpcc-common\\eclrepo");
         ArrayList<File> files = new ArrayList<File>(Arrays.asList(f.listFiles()));*/
         
-        File g = new File("C:\\Program Files\\data-integration\\plugins\\hpcc-common\\eclrepo");
+        File g = new File(".\\plugins\\hpcc-common\\eclrepo");
         String[] fileNames = g.list();
                 
         shell = new Shell(parentShell, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MIN | SWT.MAX);
@@ -281,7 +281,7 @@ public class ECLLibraryBuilderDialog extends ECLJobEntryDialog{//extends JobEntr
 					JSONParser parser  = new JSONParser();
 					Object obj;
 					try {
-						obj = parser.parse(new FileReader("C:\\Program Files\\data-integration\\plugins\\hpcc-common\\ecllibraries\\"+lib+"\\"+lib+".json"));
+						obj = parser.parse(new FileReader(".\\plugins\\hpcc-common\\ecllibraries\\"+lib+"\\"+lib+".json"));
 						JSONObject jsonObject = (JSONObject) obj;
 			 			
 						
@@ -333,17 +333,25 @@ public class ECLLibraryBuilderDialog extends ECLJobEntryDialog{//extends JobEntr
 
             public void handleEvent(Event e) {
             	String[] vals = new String[getLibValues().length];
+            	String[] out = new String[getOutVals().length];
+            	int outLen = vals.length - out.length;
             	for(int i = 0; i<getLibValues().length; i++){
             		vals[i] = libValues[i].getText();
+            		if(i >= outLen){
+						out[i-outLen] = getLibValues()[i].getText();
+					}
             	}
             	
-            	String[] comb = new String[getLibCombos().length];            	
+            	String[] comb = new String[getLibCombos().length]; 
+            	
             	for(int j = 0; j<getLibCombos().length; j++){
 					comb[j] = getLibCombos()[j].getText();
-            	}
+					
+            	}            	            
             	            	
             	setLibVals(vals);
             	setLibComb(comb);
+            	setOutVals(out);
                 ok();
             }
         };
@@ -434,7 +442,7 @@ public class ECLLibraryBuilderDialog extends ECLJobEntryDialog{//extends JobEntr
 		JSONParser parser = new JSONParser();
 		try {
 			
-			Object obj = parser.parse(new FileReader("C:\\Program Files\\data-integration\\plugins\\hpcc-common\\ecllibraries\\"+lib+"\\"+lib+".json"));
+			Object obj = parser.parse(new FileReader(".\\plugins\\hpcc-common\\ecllibraries\\"+lib+"\\"+lib+".json"));
 	 
 			JSONObject jsonObject = (JSONObject) obj;
 	 			
@@ -481,8 +489,10 @@ public class ECLLibraryBuilderDialog extends ECLJobEntryDialog{//extends JobEntr
 			}
 			setTxtVals(Size);
 			Text[] libValues = new Text[Size+outSize];
-			if(getLibVals() == null)
+			if(getLibVals() == null){
 				setLibVals(new String[Size+outSize]);
+				setOutVals(new String[outSize]);
+			}
 			
 			int i = 0;setCnt = 0;int[] combSize = new int[C.size()-Size];int combCnt = 0;
 			for(Iterator<JSONObject> it = C.iterator(); it.hasNext();){

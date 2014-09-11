@@ -471,7 +471,7 @@ public class ECLExecute extends ECLJobEntry{//extends JobEntryBase implements Cl
 	
 
 	public void cacheOutputInfo(String fileName){
-		String propertyName = "resultsFile";
+		String propertyName = "resultsFile";	
 		try{
         	String resultData = System.getProperty(propertyName);
      		if(resultData != null && !resultData.equals("")){
@@ -479,11 +479,26 @@ public class ECLExecute extends ECLJobEntry{//extends JobEntryBase implements Cl
      		}else{
      			System.setProperty(propertyName,  fileName);
      		}
-
-		}catch (Exception e){
+   		}catch (Exception e){
 			System.out.println("Error Setting result data");
 		}
 	}
+	
+	public void cacheReportInfo(String fileName){		
+		String repoProperty = "reportFile";
+		try{        	
+     		String repoData = System.getProperty(repoProperty);
+     		if(repoData != null && !repoData.equals("")){
+     			System.setProperty(repoProperty,  repoData + "," + fileName);
+     		}else{
+     			System.setProperty(repoProperty,  fileName);
+     		}
+
+		}catch (Exception e){
+			System.out.println("Error Setting report data");
+		}
+	}
+	
 	
 	
     
@@ -596,7 +611,9 @@ public class ECLExecute extends ECLJobEntry{//extends JobEntryBase implements Cl
 	        System.out.println("writing results xml: " + resultFile);
 	    	 try {              
 	             //System.getProperties().setProperty("resultsFile",resultFile);
+	    		 cacheReportInfo(resultFile);
 	             cacheOutputInfo(resultFile);
+	             
 	             BufferedWriter out = new BufferedWriter(new FileWriter(resultFile));
 	             out.write(xml);
 	             out.close();

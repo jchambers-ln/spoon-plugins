@@ -79,7 +79,7 @@ public class SysTrayTest {
 	static boolean numeric;
 	public static void main(String[] args) throws Exception{
 		 
-		final Display display = new Display();
+		/*final Display display = new Display();
 		Shell shell = new Shell(display);
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -749,7 +749,28 @@ public class SysTrayTest {
 					e1.printStackTrace();
 				}
             }
+        }*/
+		
+		Display display = new Display();
+		Shell shell = new Shell(display);
+		
+		System.out.println("Working Directory = " + System.getProperty("user.dir"));
+		String current = new java.io.File( "." ).getCanonicalPath();
+		current = current.replaceAll("\\\\", "/");
+        System.out.println("Current dir: "+current);   
+		
+		Image im = new Image(display,current+"/open.png");//src/main/resources/plugin/
+		if(im != null)
+			shell.setImage(im);
+		
+		shell.open();
+		while (!shell.isDisposed()) {
+            if (!display.readAndDispatch()) {
+                display.sleep();
+            }
         }
+		
+		
 	}
 	public static boolean isNumeric(String str)  
 	  {  
@@ -763,4 +784,5 @@ public class SysTrayTest {
 	    }  
 	    return true;  
 	  }
+	
 }
