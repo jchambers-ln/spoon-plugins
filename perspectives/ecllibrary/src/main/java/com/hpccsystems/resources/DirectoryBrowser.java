@@ -40,11 +40,11 @@ public class DirectoryBrowser {
 			System.out.println(dir.split("\\\\")[i-1]); 
 			CopyFolder obj = new CopyFolder();
 			System.out.println("Copying...");
-			File folder = new File("C:\\Program Files\\data-integration\\plugins\\hpcc-common\\ecllibraries\\"+libName);
+			File folder = new File(".\\plugins\\hpcc-common\\ecllibraries\\"+libName);
 			folder.mkdir();
- 			obj.copy(new File(dir+"\\Contract.json"), new File("C:\\Program Files\\data-integration\\plugins\\hpcc-common\\ecllibraries\\"+libName+"\\addCounter.json"));
- 			obj.copy(new File(dir+"\\images"), new File("C:\\Program Files\\data-integration\\plugins\\hpcc-common\\ecllibraries\\"+libName));
- 			obj.copy(new File(dir+"\\eclLibrary"), new File("C:\\Program Files\\data-integration\\plugins\\hpcc-common\\eclrepo\\"+libName));
+ 			obj.copy(new File(dir+"\\Contract.json"), new File(".\\plugins\\hpcc-common\\ecllibraries\\"+libName+"\\addCounter.json"));
+ 			obj.copy(new File(dir+"\\images"), new File(".\\plugins\\hpcc-common\\ecllibraries\\"+libName));
+ 			obj.copy(new File(dir+"\\eclLibrary"), new File(".\\plugins\\hpcc-common\\eclrepo\\"+libName));
  			System.out.println("Done!"); 
 		}
 	}

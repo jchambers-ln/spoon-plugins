@@ -89,7 +89,7 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class ECLMySwtPerspective implements SpoonPerspective {
 
-  private Composite comp;
+  private Composite comp = null;
   private static ECLMySwtPerspective instance = new ECLMySwtPerspective();
   ArrayList<String[]> columns = new ArrayList<String[]>();
   ArrayList<String> map = new ArrayList<String>();
@@ -118,6 +118,7 @@ private String[] filePath;
   private ECLMySwtPerspective(){  
    System.out.println("create eclResults ECLResultsSwtPerspective");
     //createUI();
+   //getUI();
   }
 
 /*  private void createUI(){
@@ -144,7 +145,7 @@ private String[] filePath;
   public void buildgui(final String fileName) throws Exception{
 	  String file = ""; 
 	  CTabItem wuidTab = new CTabItem(folder, SWT.NONE);
-		wuidTab.setText("Jo hai so yehi hai!");
+		wuidTab.setText("Report");
 		
 		folder.setSelection(folder.indexOf(wuidTab));
 		 System.out.println("BUILDTAB--------" + folder.indexOf(wuidTab));
@@ -156,11 +157,13 @@ private String[] filePath;
 		//lbl.setText(fileName);
 		//lbl.setLayoutData(new GridData(GridData.FILL));
 		
+		
+		
 		ToolBar toolBar = new ToolBar(tabHolder, SWT.FLAT | SWT.WRAP | SWT.RIGHT);
 	    
 	    ToolItem itemPush = new ToolItem(toolBar, SWT.PUSH);
 	    itemPush.setToolTipText("Open");
-	    Image icon1 = new Image(tabHolder.getDisplay(), "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\open.png");
+	    Image icon1 = new Image(tabHolder.getDisplay(), "./ui/images/open.png");//D:/Users/703119704/Documents/spoon-plugins/spoon-plugins/perspectives/eclmyperspective/
 	    itemPush.setImage(icon1);
 	    itemPush.addListener(SWT.Selection, new Listener(){
 
@@ -176,7 +179,7 @@ private String[] filePath;
 	    
 	    ToolItem itemSave = new ToolItem(toolBar, SWT.PUSH);
 	    itemSave.setToolTipText("Save As PDF");
-	    Image icon2 = new Image(tabHolder.getDisplay(), "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\save.png");
+	    Image icon2 = new Image(tabHolder.getDisplay(), "./ui/images/save.png");//src/main/resources/plugin/
 	    itemSave.setImage(icon2);	    	    	   
 	    
 	    toolBar.pack();
@@ -224,15 +227,15 @@ private String[] filePath;
 		
 		ToolItem item = new ToolItem(tc, SWT.PUSH);
 	    item.setToolTipText("Print PDF");
-	    Image icon = new Image(display, "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\print.png");
+	    Image icon = new Image(display, "./ui/images/print.png");//src/main/resources/plugin/
 	    item.setImage(icon);
 	    item = new ToolItem(tc, SWT.PUSH);
 	    item.setToolTipText("Save");
-	    icon = new Image(display, "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\save.png");
+	    icon = new Image(display, "./ui/images/save.png");//src/main/resources/plugin/
 	    item.setImage(icon);
 	    item = new ToolItem(tc, SWT.PUSH);
 	    item.setToolTipText("Save As");
-	    icon = new Image(display, "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\saveas.png");
+	    icon = new Image(display, "./ui/images/saveas.png");//src/main/resources/plugin/
 	    item.setImage(icon);
 	    
 		/*Composite Graph = new Composite(three, SWT.NONE | SWT.BORDER);
@@ -271,9 +274,10 @@ private String[] filePath;
 			    toolBar1.setLayoutData(new GridData(GridData.CENTER));
 				
 			    
+			    
 			    ToolItem itemPush1 = new ToolItem(toolBar1, SWT.PUSH);
 			    itemPush1.setToolTipText("Close");
-			    Image icon11 = new Image(display, "D:\\Users\\703119704\\Downloads\\Flow-flow\\assembly\\package-res\\ui\\images\\close-panel.png");
+			    Image icon11 = new Image(display, "./ui/images/close-panel.png");//src/main/resources/plugin/
 			    itemPush1.setImage(icon11);
 			    
 			    
@@ -925,9 +929,9 @@ private String[] filePath;
 	  //folder.setSelection(folder.getItemCount()-1);
 	  if(b){
 		  if(!this.isActive){
-			  if(System.getProperties().getProperty("resultsFile") != null && !System.getProperties().getProperty("resultsFile").equals("")){
-				  String xmlFile = System.getProperties().getProperty("resultsFile");
-				  ArrayList<String> resultFiles = parseData("resultsFile");
+			  if(System.getProperties().getProperty("reportFile") != null && !System.getProperties().getProperty("reportFile").equals("")){
+				  String xmlFile = System.getProperties().getProperty("reportFile");
+				  ArrayList<String> resultFiles = parseData("reportFile");
 				  for(int i =0; i< resultFiles.size(); i++){
 					  try {
 						buildgui(resultFiles.get(i));
@@ -936,7 +940,7 @@ private String[] filePath;
 						e.printStackTrace();
 					}
 				  }
-				  //System.getProperties().setProperty("resultsFile","");      	
+				  System.getProperties().setProperty("reportFile","");      	
 			  }	
 			  int len = folder.getItemCount();
 			  folder.setSelection(len-1);
@@ -947,7 +951,7 @@ private String[] filePath;
 		 }
        
    }else{
-        System.out.println("create eclResults setActive -- deactivate");
+        System.out.println("create eclReporting setActive -- deactivate");
    }
 	  
   }
@@ -1007,12 +1011,21 @@ private String[] filePath;
 		    
 		  display = parentShell.getDisplay();
 
-		  comp = new Composite(((Spoon) SpoonFactory.getInstance()).getShell(), SWT.BORDER);
+		  comp = new Composite(parentShell, SWT.BORDER);
 		  comp.setLayout(new GridLayout());
-		  comp.setLayoutData(new GridData(GridData.FILL_BOTH));
+		  GridData gd = new GridData(SWT.FILL,SWT.FILL,true,true);
+		  comp.setLayoutData(gd);
+
+		  //comp.setLayoutData(new GridData(GridData.FILL_BOTH));
 		  
 		  //CTabItem tab2 = new CTabItem(folder, SWT.NONE);
 	    	//tab2.setText("jus' checkin'");
+		  
+		  lbl = new Label(comp, SWT.CENTER | SWT.TOP);
+	      
+	       GridData ldata = new GridData(SWT.CENTER, SWT.TOP, true, false);
+	       lbl.setLayoutData(ldata);
+	       lbl.setText("Create Your Reports Here"); 
 		  
 			folder = new CTabFolder(comp, SWT.CLOSE);
 			folder.setSimple(false);
