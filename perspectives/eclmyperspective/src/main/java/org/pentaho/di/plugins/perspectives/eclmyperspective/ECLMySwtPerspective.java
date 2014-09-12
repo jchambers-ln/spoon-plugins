@@ -47,6 +47,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -103,7 +104,7 @@ public class ECLMySwtPerspective implements SpoonPerspective {
   private Label lbl;
   private boolean isActive;
   private boolean numeric;
-  TabItem ite;
+  CTabItem ite;
 private String[] filePath; 
   
   public void setFileName(String fn){
@@ -159,11 +160,11 @@ private String[] filePath;
 		
 		
 		
-		ToolBar toolBar = new ToolBar(tabHolder, SWT.FLAT | SWT.WRAP | SWT.RIGHT);
+		/*ToolBar toolBar = new ToolBar(tabHolder, SWT.FLAT | SWT.WRAP | SWT.RIGHT);
 	    
 	    ToolItem itemPush = new ToolItem(toolBar, SWT.PUSH);
 	    itemPush.setToolTipText("Open");
-	    Image icon1 = new Image(tabHolder.getDisplay(), "./ui/images/open.png");//D:/Users/703119704/Documents/spoon-plugins/spoon-plugins/perspectives/eclmyperspective/
+	    Image icon1 = new Image(tabHolder.getDisplay(), "./ui/images/open.png");
 	    itemPush.setImage(icon1);
 	    itemPush.addListener(SWT.Selection, new Listener(){
 
@@ -186,7 +187,7 @@ private String[] filePath;
 	    toolBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	    
 	    Label Sep = new Label(tabHolder, SWT.SEPARATOR | SWT.HORIZONTAL);	    
-		Sep.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		Sep.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));*/
 		
 		Color color = parentShell.getBackground();
 		parentShell.setBackground(new Color(null,255,255,255));
@@ -461,8 +462,9 @@ private String[] filePath;
 		Label gr2 = new Label(visualGroup, SWT.NONE);
         gr2.setText("Chart Name");
         
-        final Text cx2 = new Text(visualGroup, SWT.NONE);        
+        final Text cx2 = new Text(visualGroup, SWT.BORDER);        
 		cx2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
 		
 		Group tabGroup = new Group(three2, SWT.SHADOW_NONE);        
         tabGroup.setText("Drag 'n Drop ");
@@ -566,9 +568,11 @@ private String[] filePath;
 	    	
 	    });
 	    
-	    final TabFolder tabFolder = new TabFolder(three, SWT.NONE);
+	    final CTabFolder tabFolder = new CTabFolder(three, SWT.CLOSE);
+	    tabFolder.setSimple(false);
+	    tabFolder.setBackground(color);
 	    
-	    ite = new TabItem(tabFolder, SWT.NONE);
+	    ite = new CTabItem(tabFolder, SWT.NONE);
 	    ite.setText("Table");
 	    ite.setToolTipText("Table");
 	    
@@ -578,14 +582,7 @@ private String[] filePath;
 	    ite.setControl(table);
 	    
 	     
-	    ite = new TabItem(tabFolder, SWT.NONE);
-	    ite.setText("Graph");
-	    ite.setToolTipText("Graph");
-	    final Composite graph = new Composite(tabFolder, SWT.NONE);
-	    graph.setLayout(new GridLayout(1,false));
-	    graph.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));	    
-	    ite.setControl(graph);
-	    
+	    tabFolder.setSelection(ite);
 	    
 	    tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 	    
@@ -595,6 +592,14 @@ private String[] filePath;
 
 			@Override
 			public void handleEvent(Event arg0) {
+				ite = new CTabItem(tabFolder, SWT.NONE);
+			    ite.setText("Graph");
+			    ite.setToolTipText("Graph");
+			    final Composite graphmain = new Composite(tabFolder, SWT.NONE);
+			    graphmain.setLayout(new GridLayout(1,false));
+			    graphmain.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));	    
+			    ite.setControl(graphmain);
+			    
 				int choice = cx.getSelectionIndex();
 				if(table != null){
 					System.out.println(columns.size()); 
@@ -648,15 +653,18 @@ private String[] filePath;
 		            else{
 		            	
 		            	XYSeries[] series = new XYSeries[columns.size()];
+		            	XYSeries[] scSeries = new XYSeries[columns.size()];
 		            	int srcnt = 0;
 		            	for(Iterator<String[]> it = columns.iterator(); it.hasNext();){
 		            		String[] S = (String[]) it.next();
 		            		if(!S[0].equalsIgnoreCase(cx1.getText())){
 		            			series[srcnt] = new XYSeries(S[0]);
+		            			scSeries[srcnt] = new XYSeries(S[0]);
 		            			srcnt++;		            			
 		            		}
 		            	}
 		            	XYSeriesCollection data = new XYSeriesCollection();
+		            	XYSeriesCollection scdata = new XYSeriesCollection();
 		            	DefaultCategoryDataset Catdataset = new DefaultCategoryDataset();
 		            	DefaultPieDataset piedataset = new DefaultPieDataset();
 			            //Read File Line By Line
@@ -745,7 +753,11 @@ private String[] filePath;
 					                        					  Catdataset.addValue(Double.parseDouble(strLineArr[i]), vars[i], strLineArr[cnt]);
 					                        				  
 					                        			  	  break;
-					                        			  case 2:
+					                        			  case 3:
+					                        				  if(isNumeric(strLineArr[cnt])){
+					                        					  numeric = true;
+						                        				  scSeries[fir].add(Double.parseDouble(strLineArr[cnt]), Double.parseDouble(strLineArr[i]));
+					                        				  }
 					                        				  break;
 					                        			  default: 
 					                        			  }
@@ -764,10 +776,12 @@ private String[] filePath;
 					              strLineArr = reader.readNext();
 					              
 							}					
-							for(int l = 0;l<columns.size()-1;l++)
+							for(int l = 0;l<columns.size()-1;l++){
 								data.addSeries(series[l]);
+								scdata.addSeries(scSeries[l]);
+							}
 							XYDataset dataset = data;
-							
+							XYDataset scDataset = scdata;
 							CategoryDataset datasetcat = Catdataset;
 							
 							System.out.println("dataset "+dataset);  
@@ -867,6 +881,35 @@ private String[] filePath;
 									picomposite.setBackground(new Color(null,255,0,0));
 									picomposite.setChart(piechart);
 									break;
+									
+							case 3: 
+								JFreeChart scchart = ChartFactory.createScatterPlot(
+							            chartName,      // chart title
+							            cx1.getText(),                      // x axis label
+							            "Y",                      // y axis label
+							            scDataset,                  // data
+							            PlotOrientation.VERTICAL,
+							            true,                     // include legend
+							            true,                     // tooltips
+							            false                     // urls
+							        );
+								
+								final XYPlot plot =  scchart.getXYPlot();
+						        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+						        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+						        rangeAxis.setAutoRangeIncludesZero(true);
+								
+								
+						        final Composite graph = new Composite(tabFolder, SWT.NONE);
+							    graph.setLayout(new GridLayout(1,false));
+							    graph.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));	
+							    ite.setControl(graph);
+						        ChartComposite composite = new ChartComposite(graph, SWT.NONE,scchart,true);
+								composite.setLayout(new FillLayout(SWT.FILL));
+								composite.setLayoutData(new GridData(GridData.FILL_BOTH));//SWT.FILL, SWT.FILL, true, true
+								composite.setBackground(new Color(null,255,0,0));
+								composite.setChart(scchart);
+								break;
 							}
 								
 								//chart = null;
@@ -880,7 +923,7 @@ private String[] filePath;
 			}
 	    	
 	    });
-	    itemPush.addListener(SWT.Selection, new Listener(){
+	    itemPush1.addListener(SWT.Selection, new Listener(){
 
 			@Override
 			public void handleEvent(Event arg0) {
@@ -1022,11 +1065,41 @@ private String[] filePath;
 	    	//tab2.setText("jus' checkin'");
 		  
 		  lbl = new Label(comp, SWT.CENTER | SWT.TOP);
-	      
+		  	      
 	       GridData ldata = new GridData(SWT.CENTER, SWT.TOP, true, false);
 	       lbl.setLayoutData(ldata);
 	       lbl.setText("Create Your Reports Here"); 
-		  
+	       Button fileButton = new Button(comp, SWT.PUSH | SWT.SINGLE | SWT.TOP);
+		    
+	       fileButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
+	       fileButton.setText("OPEN FILE");
+	     
+	       //Listener for the file open button (fileButton)
+	       Listener fileOpenListener = new Listener() {
+	
+	           public void handleEvent(Event e) {
+	               String newFile = buildFileDialog();
+	               if(newFile != ""){
+	                   fileName = newFile;
+	                   //TODO: create new tab for file
+	                   //openFile(fileName);
+	                   try {
+						buildgui(fileName);
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+	                   
+	                   //int len = folder.getChildren().length;
+	                   int len = folder.getItemCount();
+	                   System.out.println("Number of tabs: " + len);
+	                   folder.setSelection(len-1);
+	               }
+	           }
+	       };
+	        
+	     fileButton.addListener(SWT.Selection, fileOpenListener);
+	       
 			folder = new CTabFolder(comp, SWT.CLOSE);
 			folder.setSimple(false);
 			folder.setBorderVisible(true);
@@ -1037,7 +1110,25 @@ private String[] filePath;
 	  }
     return comp;
   }
+  
+  private String buildFileDialog() {
+	    
+      //file field
+      FileDialog fd = new FileDialog(parentShell, SWT.SAVE);
 
+      fd.setText("Open");
+      fd.setFilterPath("C:/");
+      String[] filterExt = { "*.xml","*.csv", "*.*" };
+      fd.setFilterExtensions(filterExt);
+      String selected = fd.open();
+      if(!(fd.getFileName()).equalsIgnoreCase("")){
+          return fd.getFilterPath() + System.getProperty("file.separator") + fd.getFileName();
+      }else{
+          return "";
+      }
+      
+  }
+  
   public String getDisplayName(Locale locale) {
        //System.out.println("getDisplayName");
     return "ECL Reporting";

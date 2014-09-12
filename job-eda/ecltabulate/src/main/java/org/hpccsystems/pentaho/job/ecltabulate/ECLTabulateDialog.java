@@ -72,6 +72,7 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
 	ArrayList<Player> layers;
 	
 	
+	
     private ECLTabulate jobEntry;
     private Text jobEntryName;
     private Combo datasetName;
@@ -84,7 +85,7 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
     private String persist;
     private Composite composite;
     private String defJobName;
-   
+    
 	private SelectionAdapter lsDef;
 
 	
@@ -124,7 +125,9 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
         columns = new ArrayList<Player>();
         layers = new ArrayList<Player>();
         Settings = new ArrayList<String>();
-       
+    
+        
+        
         props.setLook(shell);
         JobDialog.setShellImage(shell, jobEntry);
         
@@ -689,6 +692,7 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
         Listener okListener = new Listener() {
 
             public void handleEvent(Event e) {
+            	
 				ok();
             }
         };
@@ -817,6 +821,7 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
         jobEntry.setCols(this.columns);
         jobEntry.setLayers(this.layers);
         jobEntry.setSettings(this.Settings);
+        
         jobEntry.setDatasetName(this.datasetName.getText());
         if(chkBox.getSelection() && outputName != null){
         	jobEntry.setOutputName(outputName.getText());
