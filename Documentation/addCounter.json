@@ -1,0 +1,64 @@
+{"contract":{
+	    "label":"Add Counter",
+	    "name":"addCounter",
+	    "version":"1.0.0",
+	    "icon":"images/icon32.png",
+	    "smallicon":"images/icon16.png",
+	    "type":"plugin",
+	    "inputStreamCount":1,
+	    "outputStreamCount":1,
+	    "formconfig":{
+	        "value":{
+		            
+		            "inputDataset":{
+		                "label":"Input Dataset",
+						"fieldType":"dsInput",
+		                "parameter":"inData"
+		            },
+		            "inputrecordlayout":{
+		                "label":"Input RecordLayout",
+						"fieldType":"recInput",
+		                "parameter":"inRec"
+		            },
+		            "setoffset":{	            
+		                "label":"Set Offset",
+						"fieldType":"select",
+		                "allowedValues":[{"value":"","label":"Select"},{"value":"No","label":"No"},{"value":"Yes","label":"Yes"}],
+		                "parameter":"setoffset",
+		                "required":"true"
+		            },
+		            
+		            "offset":{
+		                "label":"Offset",
+						"fieldType":"text",
+		                "parameter":"inOffset",
+		                "defaultValue":"0",
+		                "required":"false"
+		            }
+	        
+	            },
+	        	"help":"input information on how to use this here"
+	
+	    	},
+	    "outputLayoutAdditions":{
+	        	 "outputDataset":{
+	        	 	"dsInput":"addressFileIn",
+	        	 	"outputmodifytype":"append",
+	        	 	"_comment_fields":"eventually will support file also especially if new layout",
+	        	 	"fields":{
+	        	 		"theCount":{
+	        	 			"type":"INTEGER",
+	        	 			"size":"",
+	        	 			"maxsize":"",
+	        	 			"default":""
+	        	 		}
+	        	 	}
+	        	 }
+	    },
+	    "template":"inData := <<<inputDataset>>>;inOffset := <<<offset>>>;setOffset := '<<<setoffset>>>';offset := if(setOffset = 'Yes',inOffset,0);<<<outputDataset>>> := <<<libraryname>>>.addCounter(inData,offset,setOffset);",
+	    "files":["addCounter.ecl"],
+	    "defaultIncludes":[]
+	    }
+    
+	
+}
