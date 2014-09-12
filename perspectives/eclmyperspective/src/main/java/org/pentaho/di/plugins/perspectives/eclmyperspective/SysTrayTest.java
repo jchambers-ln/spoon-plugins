@@ -1,4 +1,9 @@
-package org.pentaho.di.plugins.perspectives.eclmyperspective;
+/*package org.pentaho.di.plugins.perspectives.eclmyperspective;
+
+
+import java.awt.color.*;
+import java.awt.Dimension;
+import java.awt.GradientPaint;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -15,6 +20,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSource;
 import org.eclipse.swt.dnd.DragSourceAdapter;
@@ -58,6 +65,8 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
@@ -74,12 +83,12 @@ public class SysTrayTest {
 	static String fileName = "";	
 	static ArrayList<String> map = new ArrayList<String>();
 	static ArrayList<String[]> columns = new ArrayList<String[]>();
-	static TabItem ite;
+	static CTabItem ite;
 	static int choice;
 	static boolean numeric;
 	public static void main(String[] args) throws Exception{
 		 
-		/*final Display display = new Display();
+		final Display display = new Display();
 		Shell shell = new Shell(display);
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -425,9 +434,11 @@ public class SysTrayTest {
 	    	
 	    });
 	    
-	    final TabFolder tabFolder = new TabFolder(three, SWT.NONE);
+	    final CTabFolder tabFolder = new CTabFolder(three, SWT.CLOSE);
+	    tabFolder.setSimple(false);
 	    
-	    ite = new TabItem(tabFolder, SWT.NONE);
+	    
+	    ite = new CTabItem(tabFolder, SWT.CLOSE);
 	    ite.setText("Table");
 	    ite.setToolTipText("Table");
 	    
@@ -436,10 +447,8 @@ public class SysTrayTest {
 	    table.setHeaderVisible(true);	    
 	    ite.setControl(table);
 	    
+	    tabFolder.setSelection(ite);
 	    
-	    ite = new TabItem(tabFolder, SWT.NONE);
-	    ite.setText("Graph");
-	    ite.setToolTipText("Graph");
 	    
 	    
 	    
@@ -449,6 +458,9 @@ public class SysTrayTest {
 			@Override
 			public void handleEvent(Event arg0) {
 				choice = cx.getSelectionIndex();
+				ite = new CTabItem(tabFolder, SWT.CLOSE);
+			    ite.setText("Graph");
+			    ite.setToolTipText("Graph");
 				readFile(fileName,false,table,null,tabFolder,ite,ax,tab1);
 			}
 	    });
@@ -488,7 +500,7 @@ public class SysTrayTest {
 	
 	
 	
-	public static void readFile(String filename, boolean header, Table table, Tree tree, TabFolder tabFolder, TabItem ite, Combo ax, Tree tab1){
+	public static void readFile(String filename, boolean header, Table table, Tree tree, CTabFolder tabFolder, CTabItem ite, Combo ax, Tree tab1){
 		if(table != null){
 			System.out.println(columns.size()); 
 			table.setItemCount(0);
@@ -539,19 +551,24 @@ public class SysTrayTest {
             }
             else{
             	XYSeries[] series = new XYSeries[columns.size()];
-            	System.out.println(columns.size()+"Yehi hai"); 
+            	XYSeries[] scatterSeries = new XYSeries[columns.size()];
+            	String[] bars = new String[columns.size()];
+            	System.out.println(columns.size()+" Yehi hai"); 
             	int srcnt = 0;
             	for(Iterator<String[]> it = columns.iterator(); it.hasNext();){
             		String[] S = (String[]) it.next();
             		if(!S[0].equalsIgnoreCase(ax.getText())){
             			series[srcnt] = new XYSeries(S[0]);
-            			//vars[srcnt] = S[0];
+            			scatterSeries[srcnt] = new XYSeries(S[0]);
+            			bars[srcnt] = S[0];
             			srcnt++;
             		}
             	}
             	XYSeriesCollection data = new XYSeriesCollection();
+            	XYSeriesCollection Scatterdata = new XYSeriesCollection();
             	DefaultCategoryDataset Catdataset = new DefaultCategoryDataset();
             	DefaultPieDataset piedataset = new DefaultPieDataset();
+            	DefaultCategoryDataset Bardataset = new DefaultCategoryDataset();
 	            //Read File Line By Line
 	            try {       
 	            	String[] vars = null;
@@ -567,7 +584,7 @@ public class SysTrayTest {
 								break;							
 							case 1: //series = new XYSeries("first");
 								break;
-							case 2:
+							case 3:// For Bar Chart
 								break;
 							default: System.out.println("Naa ho payega!");  
 							}
@@ -637,11 +654,17 @@ public class SysTrayTest {
 			                        				  else
 			                        					  Catdataset.addValue(Double.parseDouble(strLineArr[i]), vars[i], strLineArr[cnt]);
 			                        			  	  break;
-			                        			  case 2:
+			                        			  case 3:
+			                        				  	Bardataset.addValue(Double.parseDouble(strLineArr[i]), vars[i], strLineArr[cnt]);
 			                        				  break;
+			                        			  case 4:
+			                        				  if(isNumeric(strLineArr[cnt])){
+			                        					  numeric = true;
+			                        					  scatterSeries[fir].add(Double.parseDouble(strLineArr[cnt]), Double.parseDouble(strLineArr[i]));//Double.parseDouble(strLineArr[cnt])
+			                        				  }
 			                        			  default: 
 			                        			  }
-			                        			  System.out.println(Double.parseDouble(strLineArr[cnt]) + " " + i + " " +strLineArr[i]); 
+			                        			  System.out.println(vars[i] + " " +strLineArr[i]); 
 			                        			  fir++;
 			                        		  }
 			                        		  
@@ -659,11 +682,15 @@ public class SysTrayTest {
 					
 					System.out.println(series[0].getAutoSort());   
 					
-					for(int l = 0;l<columns.size()-1;l++)
+					for(int l = 0;l<columns.size()-1;l++){
 						data.addSeries(series[l]);
+						Scatterdata.addSeries(scatterSeries[l]);
+					}
 					XYDataset xydataset = data;
+					XYDataset scatterdataset = Scatterdata;
 					CategoryDataset dataset = Catdataset;
-					System.out.println("dataset "+dataset);  
+					CategoryDataset datasetBar = Bardataset;
+					System.out.println("dataset "+datasetBar.getRowCount());  
 					switch(choice){
 					case 1: 
 						JFreeChart chart = null;
@@ -741,7 +768,67 @@ public class SysTrayTest {
 							picomposite.setBackground(new Color(null,255,0,0));
 							picomposite.setChart(piechart);
 							break;
+							
+					case 3: 
+						JFreeChart Barchart = ChartFactory.createStackedBarChart(
+				            "Bar Chart Demo",         // chart title
+				            ax.getText(),               // domain axis label
+				            "Value",                  // range axis label
+				            datasetBar,                  // data
+				            PlotOrientation.VERTICAL, // orientation
+				            true,                     // include legend
+				            true,                     // tooltips?
+				            false                     // URLs?
+				        );
+						
+						final CategoryPlot plot = (CategoryPlot) Barchart.getPlot();
+						
+				        
+				        StackedBarRenderer renderer = (StackedBarRenderer) plot.getRenderer();
+				        renderer.setDrawBarOutline(false);				        				       
+						
+						final Composite bargraph = new Composite(tabFolder, SWT.NONE);
+					    bargraph.setLayout(new GridLayout(1,false));
+					    bargraph.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));	
+					    ite.setControl(bargraph);
+				        ChartComposite barcomposite = new ChartComposite(bargraph, SWT.NONE,Barchart,true);
+						barcomposite.setLayout(new FillLayout(SWT.FILL));
+						barcomposite.setLayoutData(new GridData(GridData.FILL_BOTH));//SWT.FILL, SWT.FILL, true, true
+						barcomposite.setBackground(new Color(null,255,0,0));
+						barcomposite.setChart(Barchart);
+						break;
+						
+					case 4:
+						JFreeChart scchart = ChartFactory.createScatterPlot(
+					            "Line Chart Demo 6",      // chart title
+					            ax.getText(),             // x axis label
+					            "Y",                      // y axis label
+					            scatterdataset,                  // data
+					            PlotOrientation.VERTICAL, // orientation
+					            true,                     // include legend
+					            true,                     // tooltips
+					            false                     // urls
+					        );
+						final XYPlot scplot =  scchart.getXYPlot();
+				        final NumberAxis rangeAxis = (NumberAxis) scplot.getRangeAxis();
+				        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+				        rangeAxis.setAutoRangeIncludesZero(true);
+						
+						
+				        final Composite graph = new Composite(tabFolder, SWT.NONE);
+					    graph.setLayout(new GridLayout(1,false));
+					    graph.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));	
+					    ite.setControl(graph);
+				        ChartComposite composite = new ChartComposite(graph, SWT.NONE,scchart,true);
+						composite.setLayout(new FillLayout(SWT.FILL));
+						composite.setLayoutData(new GridData(GridData.FILL_BOTH));//SWT.FILL, SWT.FILL, true, true
+						composite.setBackground(new Color(null,255,0,0));
+						composite.setChart(scchart);
+						break;
+						
 					}
+					
+					
 						
 						//chart = null;
 				} 
@@ -749,7 +836,7 @@ public class SysTrayTest {
 					e1.printStackTrace();
 				}
             }
-        }*/
+        }
 		
 		Display display = new Display();
 		Shell shell = new Shell(display);
@@ -785,4 +872,4 @@ public class SysTrayTest {
 	    return true;  
 	  }
 	
-}
+}*/
