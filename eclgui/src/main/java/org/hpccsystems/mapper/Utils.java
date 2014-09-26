@@ -7,9 +7,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.hpccsystems.eclguifeatures.AutoPopulate;
+import org.hpccsystems.recordlayout.RecordList;
+import org.pentaho.di.job.entry.JobEntryCopy;
 
 public class Utils {
 
@@ -274,6 +278,36 @@ public class Utils {
 		// Turn drawing back on!
 		tree.setRedraw(true);
 	}
+
+	public static void fillMyTree(Tree tree, Map<String, String[]> mapDataSets, boolean includeInput, String[] dataType, List<JobEntryCopy> jobs) {
+		if(mapDataSets != null){
+			for (Map.Entry<String, String[]> entry : mapDataSets.entrySet()) {
+			    String key = entry.getKey();
+			    TreeItem item = new TreeItem(tree, SWT.NONE);
+				item.setText(key);
+				/*
+				*/
+				String[] value = entry.getValue();
+				String append = "";
+				if(includeInput){
+					append = "input.";
+				}
+				for (int i = 0; i < value.length; i++) {
+					TreeItem child = new TreeItem(item, SWT.NONE);				
+					child.setText(append + value[i]);
+					if(dataType != null){
+						if(dataType[i].toLowerCase().contains("string"))
+							child.setBackground(new Color(null,211,211,211));
+					}
+				}
+			}
+			// Turn drawing back on!
+			tree.setRedraw(true);
+		}
+
+		
+	}
+
 	
 public static void fillTree(String side, String type, Tree tree, Map<String, String[]> mapDataSets) {
 		

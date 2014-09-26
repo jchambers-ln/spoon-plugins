@@ -210,10 +210,16 @@ public class ECLNewReportBuilderDialog extends ECLJobEntryDialog{//extends JobEn
         datasetGroup.setLayoutData(datasetGroupFormat);
 		
         int aLen = datasets.length;
-        int bLen = datasets1.length;
-        String[] C= new String[aLen+bLen];
-        System.arraycopy(datasets, 0, C, 0, aLen);
-        System.arraycopy(datasets1, 0, C, aLen, bLen);
+        int bLen = 0;String[] C = null;
+        if(datasets1 != null){
+        	bLen = datasets1.length;        
+        	C= new String[aLen+bLen];
+        	System.arraycopy(datasets, 0, C, 0, aLen);        
+        	System.arraycopy(datasets1, 0, C, aLen, bLen);
+        }
+        else{
+        	C = datasets;
+        }
         datasetName = buildCombo("Original Dataset :", jobEntryName, lsMod, middle, margin, datasetGroup, C);     
         ReportName = buildText("Report Name :", datasetName, lsMod, middle, margin, datasetGroup);
         //datasetName1 = buildCombo("Derived Dataset :", datasetName, lsMod, middle, margin, datasetGroup, datasets1);
@@ -385,7 +391,7 @@ public class ECLNewReportBuilderDialog extends ECLJobEntryDialog{//extends JobEn
 			}
         	
         });
-        
+           
 
         
         
@@ -743,8 +749,10 @@ class OperatorOption {
 	  public static final String DIVIDE = "Div";
 	  
 	  public static final String MOD = "Mod";
-
-	  public final static String[] INSTANCES = { NONE, ADD, SUBTRACT, MULTIPLY, DIVIDE, MOD };
+	  
+	  public static final String PERCENT = "Percent";
+	  
+	  public final static String[] INSTANCES = { NONE, ADD, SUBTRACT, MULTIPLY, DIVIDE, MOD, PERCENT };
 	
 }
 

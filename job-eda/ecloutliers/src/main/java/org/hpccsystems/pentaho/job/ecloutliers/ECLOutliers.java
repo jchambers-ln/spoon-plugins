@@ -39,11 +39,21 @@ public class ECLOutliers extends ECLJobEntry{//extends JobEntryBase implements C
 	public String filterStatement = "";
 	private MapperRecordList mapperRecList = new MapperRecordList();
 	private List rules = new ArrayList();
-	
+	private String[] dataType = null;
 	private String label ="";
 	private String outputName ="";
 	private String persist = "";
+		
 	
+	
+	public String[] getDataType() {
+		return dataType;
+	}
+
+	public void setDataType(String[] dataType) {
+		this.dataType = dataType;
+	}
+
 	public String getPersistOutputChecked() {
 		return persist;
 	}
@@ -125,62 +135,22 @@ public class ECLOutliers extends ECLJobEntry{//extends JobEntryBase implements C
 	}
 	
     @Override
-    public Result execute(Result prevResult, int k) throws KettleException {
-    	
-        /*Result result = prevResult;
-        if(result.isStopped()){
-        	return result;
-        }
-        else{
-        	String ecl = "";String filter = "";boolean flag = true;int j = 0;
-        	for(Iterator it = people.iterator(); it.hasNext();){
-        		Player P = (Player) it.next();
-        		if(P.getMin().equals("") && !P.getMax().equals("")){
-        			if(!flag){filter += " OR ";}
-        			filter += "("+P.getFirstName()+"<="+P.getMax()+")";
-        			flag = false;        			
-        		}
-        		else if(P.getMax().equals("") && !P.getMin().equals("")){
-        			if(!flag){filter += " OR ";}
-        			filter += "("+P.getFirstName()+">="+P.getMin()+")";        				
-        			flag = false;
-        		}
-        		else if(!P.getMin().equals("") && !P.getMax().equals("")){
-        			if(!flag){filter += " OR ";}
-        			filter += "("+P.getFirstName()+" BETWEEN "+P.getMin()+" AND "+P.getMax()+")";
-        			flag = false;
-        		}        		        	
-        		else if(P.getMin().equals("") && P.getMax().equals("")){
-        			filter += "";
-        			flag = false;
-        			j++;
-        		}
-        	}
-        	if(j != people.size())
-        		ecl += getDatasetName()+"_Filtered:="+getDatasetName()+"("+filter+");\n";
-        	else
-        		ecl += getDatasetName()+"_Filtered:="+getDatasetName()+";\n";
-        	
-	        logBasic("Outliers plugin =" + ecl + " " + j); 
-	        
-	        result.setResult(true);
-	        
-	        RowMetaAndData data = new RowMetaAndData();
-	        data.addValue("ecl", Value.VALUE_TYPE_STRING, ecl);
-	        
-	        
-	        List list = result.getRows();
-	        list.add(data);
-	        String eclCode = parseEclFromRowData(list);
-	        result.setRows(list);
-	        result.setLogText("ECLPercentileBuckets executed, ECL code added");
-	        return result;
-        }*/
+    public Result execute(Result prevResult, int k) throws KettleException {    	       
     	
     	Result result = modifyResults(prevResult);
         if(result.isStopped()){
         	return result;
  		}
+        
+        if(dataType != null){
+        	for(int i = 0; i<dataType.length; i++){
+        		logBasic(dataType[i]);
+        	}
+        }
+        else{
+        	logBasic("Ye kya bakchodi hai??");
+        }
+        
         Filter filter = new Filter();
         filter.setName(this.getName());
 
@@ -237,19 +207,51 @@ public class ECLOutliers extends ECLJobEntry{//extends JobEntryBase implements C
         	}
         }
     }
+
+    public String saveDataType(){
+    	String out = "";
+    	//type = getType();
+    	int cnt = 0;
+    	if(dataType != null){
+    		while(cnt < dataType.length){
+	    		if(cnt != 0){
+	    			out+="|";
+	    		}
+	    		String p = dataType[cnt];
+	    		out +=  p;
+	            cnt++;
+	    	}
+    	}
+    	return out;
+    }
+
+    public void openDataType(String in){
+        String[] strLine = in.split("\\|");
+        int len = strLine.length;
+        if(len>0){
+        	dataType = new String[len];
+        	for(int i = 0; i<len; i++){
+        		dataType[i] = strLine[i];        		
+        	}
+        }
+    }
+
     
     @Override
     public void loadXML(Node node, List<DatabaseMeta> list, List<SlaveServer> list1, Repository rpstr) throws KettleXMLException {
         try {
             super.loadXML(node, list, list1);
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "name")) != null)
-                setDatasetName(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "name")));
+                setName(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "name")));
             
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "dataset_name")) != null)
                 setDatasetName(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "dataset_name")));
             
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "rules")) != null)
                 openRules(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "rules")));
+            
+            if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "dataType")) != null)
+                openDataType(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "dataType")));
 
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "resultdataset")) != null)
                 setresultDatasetName(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "resultdataset")));
@@ -278,6 +280,7 @@ public class ECLOutliers extends ECLJobEntry{//extends JobEntryBase implements C
         retval += super.getXML();
         retval += "		<name><![CDATA[" + Name + "]]></name>" + Const.CR;
         retval += "		<rules eclIsDef=\"true\" eclType=\"rules\"><![CDATA[" + this.saveRules() + "]]></rules>" + Const.CR;
+        retval += "		<dataType><![CDATA[" + this.saveDataType() + "]]></dataType>" + Const.CR;
         retval += "		<dataset_name><![CDATA[" + DatasetName + "]]></dataset_name>" + Const.CR;
         retval += "		<resultdataset eclIsGraphable=\"true\" eclType=\"dataset\"><![CDATA[" + resultDataset + "]]></resultdataset>" + Const.CR;
         retval += "		<filterStatement><![CDATA[" + this.filterStatement + "]]></filterStatement>" + Const.CR;
@@ -299,6 +302,9 @@ public class ECLOutliers extends ECLJobEntry{//extends JobEntryBase implements C
 
             if(rep.getStepAttributeString(id_jobentry, "rules") != null)
                 this.openRules(rep.getStepAttributeString(id_jobentry, "rules")); //$NON-NLS-1$
+            
+            if(rep.getStepAttributeString(id_jobentry, "dataType") != null)
+                this.openDataType(rep.getStepAttributeString(id_jobentry, "dataType")); //$NON-NLS-1$
             
             if(rep.getStepAttributeString(id_jobentry, "resultdataset") != null)
                 resultDataset = rep.getStepAttributeString(id_jobentry, "resultdataset"); //$NON-NLS-1$
@@ -327,6 +333,8 @@ public class ECLOutliers extends ECLJobEntry{//extends JobEntryBase implements C
         	rep.saveStepAttribute(id_job, getObjectId(), "Name", Name); //$NON-NLS-1$
         	
             rep.saveStepAttribute(id_job, getObjectId(), "rules", this.saveRules()); //$NON-NLS-1$
+            
+            rep.saveStepAttribute(id_job, getObjectId(), "dataType", this.saveDataType()); //$NON-NLS-1$
 
             rep.saveStepAttribute(id_job, getObjectId(), "resultdataset", resultDataset); //$NON-NLS-1$
             

@@ -985,10 +985,7 @@ public class AutoPopulate {
         }else if(type != null && type.equalsIgnoreCase("ECLMerge")){
          parents.add(datasetParentName("recordsetSet"));
         
-        }else if(type != null && type.equalsIgnoreCase("ECLUnivariate")){
-            parents.add(datasetParentName("single"));
-            
-            }
+        }
         else if(type != null && type.equalsIgnoreCase("ECLFilter")){
          parents.add(datasetParentName("inRecordName"));
         }else if(type != null && type.equalsIgnoreCase("ECLML_FromField")){
