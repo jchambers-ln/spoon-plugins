@@ -347,6 +347,7 @@ public class ECLLibraryBuilder extends ECLJobEntry{//extends JobEntryBase implem
     	for(Iterator<String> it = replace.iterator(); it.hasNext();){
     		String S = (String) it.next();
     		int idx = Entries.indexOf(S);
+    		logBasic(S);  
     		if(idx<libValues.length){
     			line = line.replace(S, libValues[idx]);
     		}

@@ -1,6 +1,11 @@
 package org.hpccsystems.mapper;
 
 import java.awt.event.TextEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,7 +31,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -40,6 +47,7 @@ import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.hpccsystems.eclguifeatures.AutoPopulate;
+import org.hpccsystems.recordlayout.RecordList;
 import org.pentaho.di.job.entry.JobEntryCopy;
 
 public class MainMapperForOutliers {
@@ -60,6 +68,7 @@ public class MainMapperForOutliers {
 	private String[] booleanList = null;
 	private String[] cmbListValues = null;
 	private Tree treeInputDataSet = null;
+	private Table tblOperators = null;
 	
 	private Text txtValue;
 	private Text rule;
@@ -77,6 +86,7 @@ public class MainMapperForOutliers {
 	
 	private Button save;
 	private Button clearAll;
+	private Button openRules;
 	//private boolean hasChanged = false;
 	MapperBO objRecord;
 	
@@ -97,6 +107,14 @@ public class MainMapperForOutliers {
 		this.treeInputDataSet = treeInputDataSet;
 	}
 	
+	public Table getTblOperators() {
+		return tblOperators;
+	}
+
+	public void setTblOperators(Table tblOperators) {
+		this.tblOperators = tblOperators;
+	}
+
 	public String getOldexpression() {
 		return oldexpression;
 	}
@@ -167,17 +185,17 @@ public class MainMapperForOutliers {
 	
 	//The Constructor has input as 
 	
-	public MainMapperForOutliers(Composite parentComp, Map<String, String[]> mapDataSets, String[] arrCmbValues,String layoutStyle,List<JobEntryCopy> jobs){
-		setupVars(parentComp, mapDataSets, arrCmbValues, layoutStyle,jobs);
+	public MainMapperForOutliers(Display display, Composite parentComp, Map<String, String[]> mapDataSets, String[] arrCmbValues,String layoutStyle,List<JobEntryCopy> jobs, String[] dataType){
+		setupVars(display, parentComp, mapDataSets, arrCmbValues, layoutStyle,jobs,dataType);
 	}
 	
-	private void setupVars(Composite parentComp, Map<String, String[]> mapDataSets, String[] arrCmbValues,String layoutStyle,List<JobEntryCopy> jobs){
+	private void setupVars(Display display, Composite parentComp, Map<String, String[]> mapDataSets, String[] arrCmbValues,String layoutStyle,List<JobEntryCopy> jobs, String[] dataType){
 		this.layoutStyle = layoutStyle;
 		setCmbListValues(arrCmbValues);
 		populateFunctionList();
 		populateOperatorList();
 		populateBooleanList();
-		this.addChildControls(parentComp, mapDataSets, jobs);
+		this.addChildControls(display, parentComp, mapDataSets, jobs, dataType);
 		if(this.layoutStyle.equalsIgnoreCase("transform")){
 			int numExpressions = tableViewer.getTable().getItemCount();
 			if(numExpressions>1 && !layoutStyle.equalsIgnoreCase("transform")){
@@ -191,13 +209,13 @@ public class MainMapperForOutliers {
 	 * Create a new shell, add the widgets, open the shell
 	 * @return the shell that was created	 
 	 */
-	private void addChildControls(Composite parentComp, Map<String, String[]> mapDataSets, List<JobEntryCopy> jobs) {
+	private void addChildControls(Display display, Composite parentComp, Map<String, String[]> mapDataSets, List<JobEntryCopy> jobs, String[] dataType) {
 		if(this.layoutStyle.equalsIgnoreCase("transform")){
 			Composite tblComposite = new Composite(parentComp, SWT.NONE);
 			createTable(tblComposite);		// Create the table
 			createButtons(tblComposite);
 		}
-		buildExpressionPanel(parentComp, mapDataSets, jobs);	// Add the widgets needed to build a Expression Panel
+		buildExpressionPanel(display, parentComp, mapDataSets, jobs, dataType);	// Add the widgets needed to build a Expression Panel
 		
 	}
 	
@@ -207,7 +225,7 @@ public class MainMapperForOutliers {
 	}
 	
 	private void populateOperatorList() {
-		String operatorList[] = {":=","+", "-", "*", "/", "%", "(", ")", "=", "<>", ">", "<", "<=", ">=","~"};
+		String operatorList[] = {"'", "=", "<>", "(", ")", ":=","+", "-", "*", "/", "%", ">", "<", "<=", ">=","~"};
 		setOperatorList(operatorList);
 	}
 	
@@ -474,8 +492,8 @@ public class MainMapperForOutliers {
 	
 	
 	
-	public void buildExpressionPanel(Composite parentComp, Map<String, String[]> mapDataSets, List<JobEntryCopy> jobs){
-		
+	public void buildExpressionPanel(final Display display, Composite parentComp, Map<String, String[]> mapDataSets, final List<JobEntryCopy> jobs, final String[] dataType){
+		 
 		Composite comp2 = new Composite(parentComp, SWT.NONE);
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 1;
@@ -487,7 +505,7 @@ public class MainMapperForOutliers {
 		Group group1 = new Group(comp2, SWT.SHADOW_IN);
 	    
 	    layout = new GridLayout();
-		layout.numColumns = 2;
+		layout.numColumns = 2; 
 		layout.makeColumnsEqualWidth = false;
 		data = new GridData(GridData.FILL_BOTH);
 		group1.setLayout(layout);
@@ -577,7 +595,16 @@ public class MainMapperForOutliers {
 	    if(this.layoutStyle.equalsIgnoreCase("transform")){
 	    	includeInput = true;
 	    }
-	    Utils.fillTree(treeInputDataSet, mapDataSets, includeInput); //Get the values from the HashMap passed as an argument
+	    Utils.fillMyTree(treeInputDataSet, mapDataSets, includeInput, dataType, jobs); //Get the values from the HashMap passed as an argument
+	    
+	    int style = SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL;
+	    tblOperators = new Table(compTreePanel, style);
+		gridData = new GridData();
+		gridData.heightHint = 80;
+		gridData.widthHint = 100;
+		tblOperators.setLayoutData(gridData);
+		
+	    
 	    treeInputDataSet.addMouseListener(new MouseListener() {
 			
 			@Override
@@ -586,8 +613,27 @@ public class MainMapperForOutliers {
 			}
 			
 			@Override
-			public void mouseDown(MouseEvent arg0) {
-				//Do Nothing
+			public void mouseDown(MouseEvent event) {				
+				Point point = new Point(event.x, event.y);
+		        TreeItem item = treeInputDataSet.getItem(point);		        
+		        if (item != null) {		        	
+		        	System.out.println("Mouse down: " + item);
+		        	
+					if(item.getBackground().getBlue() != 255 && item.getBackground().getRed() != 255 && item.getBackground().getGreen() != 255){
+						tblOperators.setItemCount(0);
+						for (int i = 4 ; i >= 0 ; i--) {		        		  
+							TableItem item1 = new TableItem(tblOperators, SWT.NONE, 0);
+							item1.setText(getOperatorList()[i]);
+						}
+					}
+					else{
+						tblOperators.setItemCount(0);
+						for (int i = getOperatorList().length-1; i >=0 ; i--) {		        		  
+							TableItem item1 = new TableItem(tblOperators, SWT.NONE, 0);
+							item1.setText(getOperatorList()[i]);
+						}
+					}
+		        }
 			}
 			
 			@Override
@@ -599,7 +645,7 @@ public class MainMapperForOutliers {
 					if(txtExpression.getCaretPosition() > 0) {
 						StringBuffer buf = new StringBuffer(txtExpression.getText());
 						buf.insert(txtExpression.getCaretPosition(), dataField);
-						txtExpression.setText(buf.toString());
+						txtExpression.setText(buf.toString()); 
 					} else {
 						StringBuffer buf = new StringBuffer(txtExpression.getText());
 						buf.append(dataField);
@@ -610,12 +656,7 @@ public class MainMapperForOutliers {
 		});
 	    
 	    
-	    int style = SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL;
-	    final Table tblOperators = new Table(compTreePanel, style);
-		gridData = new GridData();
-		gridData.heightHint = 80;
-		gridData.widthHint = 100;
-		tblOperators.setLayoutData(gridData);
+	    
 		
 		for (int i = getOperatorList().length -1 ; i >= 0 ; i--) {
 			TableItem item = new TableItem(tblOperators, SWT.NONE, 0);
@@ -818,6 +859,47 @@ public class MainMapperForOutliers {
     	   txtExpression.setText(" ");
        	 }
        });
+		
+		openRules = new Button(group1, SWT.PUSH);
+		openRules.setText("Open");
+		openRules.addSelectionListener(new SelectionAdapter(){
+			@Override
+	       	public void widgetSelected(SelectionEvent e) {
+				
+				Shell shell = new Shell(display);
+				shell.setLayout(new GridLayout());
+				FileDialog fd = new FileDialog(shell, SWT.OPEN);
+		        fd.setText("Open Rules");
+		        fd.setFilterPath(".");
+		        String[] filterExt = { "*.txt", "*.doc", ".rtf", "*.*" };
+		        fd.setFilterExtensions(filterExt);
+		        String selected = fd.open();
+		        System.out.println(selected);
+		        File file = new File(selected);
+		        BufferedReader reader = null; 
+				try {
+					reader = new BufferedReader(new FileReader(file));
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+		        String line = null;
+		        try {
+		        	ruleTable.setItemCount(0);
+					while ((line = reader.readLine()) != null) {
+						TableItem item = new TableItem(ruleTable, SWT.NONE, 0);
+			      		item.setText(line);
+			      		rulesList.add(line);			      		
+					}
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+		        setRulesList(rulesList);
+		        shell.dispose();
+		        
+			}
+		});
 		
 		clearAll = new Button(group1, SWT.PUSH);
 		clearAll.setText("ClearAll");

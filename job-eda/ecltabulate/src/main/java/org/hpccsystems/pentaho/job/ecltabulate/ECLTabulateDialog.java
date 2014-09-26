@@ -5,6 +5,7 @@
 package org.hpccsystems.pentaho.job.ecltabulate;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jface.viewers.CellEditor;
@@ -70,8 +71,10 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
 	ArrayList<Player> rows;
 	ArrayList<Player> columns;
 	ArrayList<Player> layers;
-	
-	
+	private String test = "";
+    private int number = 1;
+    private String flag = "true";
+	String[] tables;
 	
     private ECLTabulate jobEntry;
     private Text jobEntryName;
@@ -125,7 +128,12 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
         columns = new ArrayList<Player>();
         layers = new ArrayList<Player>();
         Settings = new ArrayList<String>();
-    
+        tables = new String[rows.size()];
+        test = jobEntry.getName().substring(jobEntry.getName().length()-1); 
+        if(Character.isDigit(test.toCharArray()[0]) && flag.equals("true")){
+        	number = Integer.parseInt(test);        	
+        	flag = "false";
+        }
         
         
         props.setLook(shell);
@@ -351,16 +359,18 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
 						}
 					}
 					if(fields.isEmpty()){
-						for(int i = 0; i<items.length; i++){
-							Player obj = new Player();
-							obj.setFirstName(items[i]);
-							obj.setOP(0);
-							
-							fields.add(obj);
+						if(items != null){
+							for(int i = 0; i<items.length; i++){
+								Player obj = new Player();
+								obj.setFirstName(items[i]);
+								obj.setOP(0);
+								
+								fields.add(obj);
+							}
 						}
 					}
 					tv.refresh();
-					tv.setInput(fields);
+					tv.setInput(fields);					
 		      }
 	    });
 	    
@@ -692,7 +702,14 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
         Listener okListener = new Listener() {
 
             public void handleEvent(Event e) {
-            	
+            	test = jobEntry.getName();
+            	tables = new String[rows.size()];
+            	int cnt = 0;
+            	for(Iterator<Player> it = rows.iterator(); it.hasNext();){
+            		Player P = (Player) it.next();
+            		tables[cnt] = P.getFirstName()+"_"+number;
+            		cnt++;
+            	}
 				ok();
             }
         };
@@ -726,6 +743,10 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
         if (jobEntry.getDatasetName() != null) {
             datasetName.setText(jobEntry.getDatasetName());
         }
+
+        if (jobEntry.getNumber() != null) {
+            number = Integer.parseInt(jobEntry.getNumber());
+        }
         
         if(jobEntry.getPeople() != null){
         	fields = jobEntry.getPeople();
@@ -749,6 +770,10 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
         }
         if(jobEntry.getSettings() != null){
         	Settings = jobEntry.getSettings();
+        }
+        
+        if(jobEntry.getTables() != null){
+        	tables = jobEntry.getTables();
         }
         
         if (jobEntry.getPersistOutputChecked() != null && chkBox != null) {
@@ -821,7 +846,8 @@ public class ECLTabulateDialog extends ECLJobEntryDialog{
         jobEntry.setCols(this.columns);
         jobEntry.setLayers(this.layers);
         jobEntry.setSettings(this.Settings);
-        
+        jobEntry.setTables(this.tables);
+        jobEntry.setNumber(Integer.toString(this.number));
         jobEntry.setDatasetName(this.datasetName.getText());
         if(chkBox.getSelection() && outputName != null){
         	jobEntry.setOutputName(outputName.getText());

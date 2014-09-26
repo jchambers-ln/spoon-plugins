@@ -15,11 +15,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
@@ -84,6 +86,9 @@ import org.pentaho.di.ui.spoon.SpoonPerspectiveListener;
 import org.pentaho.ui.xul.XulOverlay;
 import org.pentaho.ui.xul.impl.DefaultXulOverlay;
 import org.pentaho.ui.xul.impl.XulEventHandler;
+import org.swtchart.Chart;
+import org.swtchart.IBarSeries;
+import org.swtchart.ISeries.SeriesType;
 import org.w3c.dom.Document;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -92,9 +97,7 @@ public class ECLMySwtPerspective implements SpoonPerspective {
 
   private Composite comp = null;
   private static ECLMySwtPerspective instance = new ECLMySwtPerspective();
-  ArrayList<String[]> columns = new ArrayList<String[]>();
-  ArrayList<String> map = new ArrayList<String>();
-
+  
   private Display display;
   private String fileName;
   private CTabFolder folder;
@@ -122,7 +125,7 @@ private String[] filePath;
    //getUI();
   }
 
-/*  private void createUI(){
+  /*private Composite createUI(){
 	  
 	  parentShell = ((Spoon) SpoonFactory.getInstance()).getShell();
 	    
@@ -141,10 +144,13 @@ private String[] filePath;
 		folder.setLayoutData(new GridData(GridData.FILL_BOTH));
     	//Label lbl = new Label(folder, SWT.NONE);
     	//lbl.setText("hjgghjghjg");
+		return comp;
   }
 */
   public void buildgui(final String fileName) throws Exception{
-	  String file = ""; 
+	  String file = ""; final ArrayList<String[]> columns = new ArrayList<String[]>();
+	  final ArrayList<String> map = new ArrayList<String>();
+
 	  CTabItem wuidTab = new CTabItem(folder, SWT.NONE);
 		wuidTab.setText("Report");
 		
@@ -651,6 +657,12 @@ private String[] filePath;
 						}
 		            }
 		            else{
+		            	ArrayList<ArrayList<Double>> yaxes = new ArrayList<ArrayList<Double>>();
+		            	for(int i = 0; i<columns.size()-1; i++){
+		            		yaxes.add(new ArrayList<Double>());
+		            	}
+		            	ArrayList<String> category = new ArrayList<String>();
+		            	ArrayList<Double> x_axis = new ArrayList<Double>();
 		            	
 		            	XYSeries[] series = new XYSeries[columns.size()];
 		            	XYSeries[] scSeries = new XYSeries[columns.size()];
@@ -753,6 +765,17 @@ private String[] filePath;
 					                        					  Catdataset.addValue(Double.parseDouble(strLineArr[i]), vars[i], strLineArr[cnt]);
 					                        				  
 					                        			  	  break;
+					                        			  	  
+					                        			  case 2:
+					                        				  yaxes.get(fir).add(Double.parseDouble(strLineArr[i]));
+						                        			  //fir++;
+						                        			  if(isNumeric(strLineArr[cnt])){
+						                        				  x_axis.add(Double.parseDouble(strLineArr[cnt]));
+						                        				  numeric = true;
+						                        			  }
+						                        			  else
+						                        				  category.add(strLineArr[cnt]);
+					                        				  break;
 					                        			  case 3:
 					                        				  if(isNumeric(strLineArr[cnt])){
 					                        					  numeric = true;
@@ -909,6 +932,89 @@ private String[] filePath;
 								composite.setLayoutData(new GridData(GridData.FILL_BOTH));//SWT.FILL, SWT.FILL, true, true
 								composite.setBackground(new Color(null,255,0,0));
 								composite.setChart(scchart);
+								break;
+								
+							case 2:
+								final Composite bargraph = new Composite(tabFolder, SWT.NONE);
+							    bargraph.setLayout(new GridLayout(1,false));
+							    bargraph.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));	
+							    ite.setControl(bargraph);
+							    
+							    Composite barcomposite = new Composite(bargraph, SWT.NONE);
+								barcomposite.setLayout(new FillLayout(SWT.FILL));
+								barcomposite.setLayoutData(new GridData(GridData.FILL_BOTH));//SWT.FILL, SWT.FILL, true, true
+								barcomposite.setBackground(new Color(null,255,0,0));
+								IBarSeries[] BarSeries1 = new IBarSeries[columns.size() - 1];
+								Chart barchart = new Chart(barcomposite, SWT.NONE);												
+								
+								String barchartName = "MyChart";
+								if(cx2.getText().equals(""))
+									barchartName = "MyChart";
+								else
+									barchartName = cx2.getText();
+								barchart.getTitle().setText(barchartName);
+								barchart.getTitle().setForeground(new Color(null,0,0,0));
+								barchart.setBackground(new Color(null,211,211,211));
+								
+								Random rand = new Random();
+								
+								for(int k = 0; k<columns.size()-1; k++){
+									ArrayList<Double> temp = yaxes.get(k);
+									Double[] yaxis = new Double[temp.size()];
+									Double[] axis = new Double[x_axis.size()];
+									String[] cat = new String[category.size()];
+									yaxis = temp.toArray(yaxis);
+									if(numeric){
+										axis = x_axis.toArray(axis);																			
+										barchart.getAxisSet().getXAxis(0).getTitle().setText(cx1.getText());
+										barchart.getAxisSet().getXAxis(0).getTitle().setForeground(new Color(null,0,0,0));
+										barchart.getAxisSet().getYAxis(0).getTitle().setText("Y");
+										barchart.getAxisSet().getYAxis(0).getTitle().setForeground(new Color(null,0,0,0));
+										
+										BarSeries1[k] = (IBarSeries) barchart.getSeriesSet().createSeries(SeriesType.BAR, columns.get(k)[0]); 
+										
+										BarSeries1[k].setXSeries(ArrayUtils.toPrimitive(axis)); 
+										BarSeries1[k].setYSeries(ArrayUtils.toPrimitive(yaxis));
+										int R = (int)(Math.random()*256);
+										int G = (int)(Math.random()*256);
+										int B= (int)(Math.random()*256);
+										Color color = new Color(null, R, G, B); //random color, but can be bright or dull
+
+										BarSeries1[k].setBarColor(color);  
+										barchart.getAxisSet().adjustRange();
+									}
+									else{
+										cat = category.toArray(cat);
+										
+										System.out.println("xaxis:");
+										for(String S : cat){
+											System.out.println(S);
+										} 
+										
+										System.out.println("yaxis:");
+										for(Double D : temp){
+											System.out.println(D); 
+										}
+										barchart.getAxisSet().getXAxis(0).getTitle().setText(cx1.getText());
+										barchart.getAxisSet().getXAxis(0).getTitle().setForeground(new Color(null,0,0,0));
+										barchart.getAxisSet().getYAxis(0).getTitle().setText("Y");
+										barchart.getAxisSet().getYAxis(0).getTitle().setForeground(new Color(null,0,0,0));
+										barchart.getAxisSet().getXAxis(0).enableCategory(true);
+										barchart.getAxisSet().getXAxis(0).setCategorySeries(cat);
+										// create scatter series
+										BarSeries1[k] = (IBarSeries) barchart.getSeriesSet().createSeries(SeriesType.BAR, columns.get(k)[0]);  
+										//BarSeries1[k].setLineStyle(LineStyle.NONE);
+										//scatterSeries1[k].setXSeries(cat); 
+										BarSeries1[k].setYSeries(ArrayUtils.toPrimitive(yaxis));
+										int R = (int)(Math.random()*256);
+										int G = (int)(Math.random()*256);
+										int B= (int)(Math.random()*256);
+										Color color = new Color(null, R, G, B); //random color, but can be bright or dull
+
+										BarSeries1[k].setBarColor(color); 
+										barchart.getAxisSet().adjustRange();
+									}
+								}
 								break;
 							}
 								
@@ -1108,6 +1214,7 @@ private String[] filePath;
 	    	//lbl.setText("hjgghjghjg");
 		  
 	  }
+	  
     return comp;
   }
   

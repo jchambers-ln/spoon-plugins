@@ -118,7 +118,18 @@ public class ECLNewReportBuilder extends ECLJobEntry{//extends JobEntryBase impl
         			S = fields.split(",");
         			for(String s : S){
         				if(!vars.contains(s.toLowerCase()))
-        					S1 += "L."+s+"+";
+        				{
+        					if(s.contains("(") && s.contains(")")){
+        						if(!s.toLowerCase().startsWith("count"))
+        							S1 += new StringBuilder(s).insert(s.indexOf("(")+1, getDatasetName()+","+getDatasetName()+".").toString()+"/";
+        						else{
+        							S1 += "COUNT("+getDatasetName()+")/"; 
+        						}
+        							
+            				}
+        					else
+        						S1 += "L."+s+"/";
+        				}
         				else
         					S1 += "SELF."+s+"+";
         			}
@@ -130,7 +141,18 @@ public class ECLNewReportBuilder extends ECLJobEntry{//extends JobEntryBase impl
         			S = fields.split(",");
         			for(String s : S){
         				if(!vars.contains(s.toLowerCase()))
-        					S1 += "L."+s+"-";
+        				{
+        					if(s.contains("(") && s.contains(")")){
+        						if(!s.toLowerCase().startsWith("count"))
+        							S1 += new StringBuilder(s).insert(s.indexOf("(")+1, getDatasetName()+","+getDatasetName()+".").toString()+"/";
+        						else{
+        							S1 += "COUNT("+getDatasetName()+")/"; 
+        						}
+        							
+            				}
+        					else
+        						S1 += "L."+s+"/";
+        				}
         				else
         					S1 += "SELF."+s+"-";
         			}
@@ -141,8 +163,19 @@ public class ECLNewReportBuilder extends ECLJobEntry{//extends JobEntryBase impl
         			S1 = "SELF."+varName+" := ";
         			S = fields.split(",");
         			for(String s : S){
-        				if(!vars.contains(s.toLowerCase()))
-        					S1 += "L."+s+"*";
+        				if(!vars.contains(s.toLowerCase())){
+        					if(s.contains("(") && s.contains(")")){
+        						if(!s.toLowerCase().startsWith("count"))
+        							S1 += new StringBuilder(s).insert(s.indexOf("(")+1, getDatasetName()+","+getDatasetName()+".").toString()+"/";
+        						else{
+        							S1 += "COUNT("+getDatasetName()+")/"; 
+        						}
+        							
+            				}
+        					else
+        						S1 += "L."+s+"/";
+        				}
+        					
         				else
         					S1 += "SELF."+s+"*";
         			}
@@ -153,8 +186,19 @@ public class ECLNewReportBuilder extends ECLJobEntry{//extends JobEntryBase impl
         			S1 = "SELF."+varName+" := ";
         			S = fields.split(",");
         			for(String s : S){
-        				if(!vars.contains(s.toLowerCase()))
-        					S1 += "L."+s+"/";
+        				if(!vars.contains(s.toLowerCase())){
+        					if(s.contains("(") && s.contains(")")){
+        						if(!s.toLowerCase().startsWith("count"))
+        							S1 += new StringBuilder(s).insert(s.indexOf("(")+1, getDatasetName()+","+getDatasetName()+".").toString()+"/";
+        						else{
+        							S1 += "COUNT("+getDatasetName()+")/"; 
+        						}
+        							
+            				}
+        					else
+        						S1 += "L."+s+"/";
+        				}
+        					
         				else
         					S1 += "SELF."+s+"/";
         			}
@@ -165,14 +209,48 @@ public class ECLNewReportBuilder extends ECLJobEntry{//extends JobEntryBase impl
         			S1 = "SELF."+varName+" := ";
         			S = fields.split(",");
         			for(String s : S){
-        				if(!vars.contains(s.toLowerCase()))
-        					S1 += "L."+s+"%";
+        				if(!vars.contains(s.toLowerCase())){
+        					if(s.contains("(") && s.contains(")")){
+        						if(!s.toLowerCase().startsWith("count"))
+        							S1 += new StringBuilder(s).insert(s.indexOf("(")+1, getDatasetName()+","+getDatasetName()+".").toString()+"/";
+        						else{
+        							S1 += "COUNT("+getDatasetName()+")/"; 
+        						}
+        							
+            				}
+        					else
+        						S1 += "L."+s+"/";
+        				}        					
         				else
         					S1 += "SELF."+s+"%";
         			}
         			S1 = S1.substring(0,S1.length()-1);
         			report += S1+";\n";
         			break;
+        		case 6:
+        			S1 = "SELF."+varName+" := ";
+        			S = fields.split(",");
+        			for(String s : S){        				
+        				if(!vars.contains(s.toLowerCase())){
+        					if(s.contains("(") && s.contains(")")){
+        						if(!s.toLowerCase().startsWith("count"))
+        							S1 += new StringBuilder(s).insert(s.indexOf("(")+1, getDatasetName()+","+getDatasetName()+".").toString()+"/";
+        						else{
+        							S1 += "COUNT("+getDatasetName()+")/"; 
+        						}
+        							
+            				}
+        					else
+        						S1 += "L."+s+"/";
+        				}
+        				else{
+        					S1 += "SELF."+s+"/";
+        				}
+        			}
+        			S1 = S1.substring(0,S1.length()-1)+"*100";
+        			report += S1+";\n";
+        			break;
+        		
         		default:
         			break;
         		}
