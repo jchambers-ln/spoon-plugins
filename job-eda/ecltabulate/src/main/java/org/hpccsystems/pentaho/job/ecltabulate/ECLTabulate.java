@@ -36,6 +36,8 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
 	private ArrayList<Player> cols = new ArrayList<Player>();
 	private ArrayList<Player> layers = new ArrayList<Player>();
 	private ArrayList<String> settings = new ArrayList<String>();
+	private String[] tables = null;
+	private String number;
 	
 	private String label ="";
 	private String outputName ="";
@@ -45,6 +47,22 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
 	
 	
 	
+	public String getNumber() {
+		return number;
+	}
+
+	public void setNumber(String number) {
+		this.number = number;
+	}
+
+	public String[] getTables() {
+		return tables;
+	}
+
+	public void setTables(String[] tables) {
+		this.tables = tables;
+	}
+
 	public ArrayList<String> getSettings() {
 		return settings;
 	}
@@ -134,7 +152,10 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
         	return result;
         }
         else{
-        	String ecl = "";int cnt = 0;String layer = "";String group = "";String join ="";        	
+        	String ecl = "";int cnt = 0;String layer = "";String group = "";String join =""; 
+        	boolean parent = settings.contains("parent");
+        	boolean total = settings.contains("total");
+        	
         	for(Iterator<Player> itL = layers.iterator(); itL.hasNext();){
         		Player sl = (Player) itL.next();
         		String Sl = sl.getFirstName();
@@ -167,38 +188,52 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
         			switch(op){
         			case 0: 
         				ecl += "cnt_"+Sc+" := COUNT(GROUP);\n";
-        				if(percent > 0)
-        					ecl += "DECIMAL5_2 "+Sc+"_Percent := 0;\n";
+        				if(parent)
+        					ecl += "DECIMAL5_2 "+Sc+"_Parent_Percent := 0;\n";
+        				if(total)
+        					ecl += "DECIMAL5_2 "+Sc+"_Total_Percent := 0;\n";
         				break;
         			case 1:
         				ecl += "add_"+Sc+" := SUM(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";
-        				if(percent > 0)
-        					ecl += "DECIMAL5_2 "+Sc+"_Percent := 0;\n";
+        				if(parent)
+        					ecl += "DECIMAL5_2 "+Sc+"_Parent_Percent := 0;\n";
+        				if(total)
+        					ecl += "DECIMAL5_2 "+Sc+"_Total_Percent := 0;\n";
         				break;
         			case 2:
         				ecl += "Mean_"+Sc+" := AVE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";
-        				if(percent > 0)
-        					ecl += "DECIMAL5_2 "+Sc+"_Percent := 0;\n";
+        				if(parent)
+        					ecl += "DECIMAL5_2 "+Sc+"_Parent_Percent := 0;\n";
+        				if(total)
+        					ecl += "DECIMAL5_2 "+Sc+"_Total_Percent := 0;\n";
         				break;
         			case 3:
         				ecl += "Var_"+Sc+" := VARIANCE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";
-        				if(percent > 0)
-        					ecl += "DECIMAL5_2 "+Sc+"_Percent := 0;\n";
+        				if(parent)
+        					ecl += "DECIMAL5_2 "+Sc+"_Parent_Percent := 0;\n";
+        				if(total)
+        					ecl += "DECIMAL5_2 "+Sc+"_Total_Percent := 0;\n";
         				break;
         			case 4:
         				ecl += "Sd_"+Sc+" := SQRT(VARIANCE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+"));\n";
-        				if(percent > 0)
-        					ecl += "DECIMAL5_2 "+Sc+"_Percent := 0;\n";
+        				if(parent)
+        					ecl += "DECIMAL5_2 "+Sc+"_Parent_Percent := 0;\n";
+        				if(total)
+        					ecl += "DECIMAL5_2 "+Sc+"_Total_Percent := 0;\n";
         				break;
         			case 5:
         				ecl += "maximum_"+Sc+":= MAX(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";
-        				if(percent > 0)
-        					ecl += "DECIMAL5_2 "+Sc+"_Percent := 0;\n";
+        				if(parent)
+        					ecl += "DECIMAL5_2 "+Sc+"_Parent_Percent := 0;\n";
+        				if(total)
+        					ecl += "DECIMAL5_2 "+Sc+"_Total_Percent := 0;\n";
         				break;
         			case 6:
         				ecl += "minimum_"+Sc+" := MIN(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";
-        				if(percent > 0)
-        					ecl += "DECIMAL5_2 "+Sc+"_Percent := 0;\n";
+        				if(parent)
+        					ecl += "DECIMAL5_2 "+Sc+"_Parent_Percent := 0;\n";
+        				if(total)
+        					ecl += "DECIMAL5_2 "+Sc+"_Total_Percent := 0;\n";
         				break;
         			}        			
         		}
@@ -208,160 +243,163 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
     			else
     				ecl += "MyTab"+cnt+":=TABLE("+this.getDatasetName()+",MyRec"+cnt+","+Sr+");\n";
     			
-        		if(settings.contains("parent")){
-        			transform = "";
-        			if(layer!="")
-        				ecl += "MyNewRecParent"+cnt+" := RECORD\n"+layer;
-        			else
-        				ecl += "MyNewRecParent"+cnt+" := RECORD\n"+this.getDatasetName()+"."+Sr+";\n";
-        			for(Iterator<Player> itC = cols.iterator(); itC.hasNext();){
-            			Player sc = (Player) itC.next();
-            			String Sc = sc.getFirstName();
-            			int op = sc.getOP();
-            			switch(op){
-            			case 0: 
-            				ecl += "cnt_layers_"+Sc+" := COUNT(GROUP);\n";
-            				transform += "SELF."+Sc+"_Percent := (100*(L.cnt_"+Sc+"/L.cnt_layers_"+Sc+"));\n";
-            				break;
-            			case 1:
-            				ecl += "add_layers_"+Sc+" := SUM(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";    
-            				transform += "SELF."+Sc+"_Percent := (100*(L.add_"+Sc+"/L.add_layers_"+Sc+"));\n";
-            				break;
-            			case 2:
-            				ecl += "Mean_layers_"+Sc+" := AVE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";   
-            				transform += "SELF."+Sc+"_Percent := (100*(L.Mean_"+Sc+"/L.Mean_layers_"+Sc+"));\n";
-            				break;
-            			case 3:
-            				ecl += "Var_layers_"+Sc+" := VARIANCE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";  
-            				transform += "SELF."+Sc+"_Percent := (100*(L.Var_"+Sc+"/L.Var_layers_"+Sc+"));\n";
-            				break;
-            			case 4:
-            				ecl += "Sd_layers_"+Sc+" := SQRT(VARIANCE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+"));\n";  
-            				transform += "SELF."+Sc+"_Percent := (100*(L.Sd_"+Sc+"/L.Sd_layers_"+Sc+"));\n";
-            				break;
-            			case 5:
-            				ecl += "maximum_layers_"+Sc+" := MAX(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";   
-            				transform += "SELF."+Sc+"_Percent := (100*(L.maximum_"+Sc+"/L.maximum_layers_"+Sc+"));\n";
-            				break;
-            			case 6:
-            				ecl += "minimum_layers_"+Sc+" := MIN(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";  
-            				transform += "SELF."+Sc+"_Percent := (100*(L.minimum_"+Sc+"/L.minimum_layers_"+Sc+"));\n";         				
-            				break;
+    			
+    			
+        		if(settings.contains("parent") || settings.contains("total")){
+        			String joinT = "";
+        			
+        			if(parent){
+        				transform = "";
+        				if(layer!="")
+            				ecl += "MyNewRecParent"+cnt+" := RECORD\n"+layer;
+            			else
+            				ecl += "MyNewRecParent"+cnt+" := RECORD\n"+this.getDatasetName()+"."+Sr+";\n";
+            			for(Iterator<Player> itC = cols.iterator(); itC.hasNext();){
+                			Player sc = (Player) itC.next();
+                			String Sc = sc.getFirstName();
+                			int op = sc.getOP();
+                			switch(op){
+                			case 0: 
+                				ecl += "cnt_layers_"+Sc+" := COUNT(GROUP);\n";
+                				transform += "SELF."+Sc+"_Parent_Percent := (100*(L.cnt_"+Sc+"/L.cnt_layers_"+Sc+"));\n";
+                				joinT += "SELF."+Sc+"_Parent_Percent := R."+Sc+"_Parent_Percent;\n";
+                				break;
+                			case 1:
+                				ecl += "add_layers_"+Sc+" := SUM(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";    
+                				transform += "SELF."+Sc+"_Parent_Percent := (100*(L.add_"+Sc+"/L.add_layers_"+Sc+"));\n";
+                				joinT += "SELF."+Sc+"_Parent_Percent := R."+Sc+"_Parent_Percent;\n";
+                				break;
+                			case 2:
+                				ecl += "Mean_layers_"+Sc+" := AVE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";   
+                				transform += "SELF."+Sc+"_Parent_Percent := (100*(L.Mean_"+Sc+"/L.Mean_layers_"+Sc+"));\n";
+                				joinT += "SELF."+Sc+"_Parent_Percent := R."+Sc+"_Parent_Percent;\n";
+                				break;
+                			case 3:
+                				ecl += "Var_layers_"+Sc+" := VARIANCE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";  
+                				transform += "SELF."+Sc+"_Parent_Percent := (100*(L.Var_"+Sc+"/L.Var_layers_"+Sc+"));\n";
+                				joinT += "SELF."+Sc+"_Parent_Percent := R."+Sc+"_Parent_Percent;\n";
+                				break;
+                			case 4:
+                				ecl += "Sd_layers_"+Sc+" := SQRT(VARIANCE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+"));\n";  
+                				transform += "SELF."+Sc+"_Parent_Percent := (100*(L.Sd_"+Sc+"/L.Sd_layers_"+Sc+"));\n";
+                				joinT += "SELF."+Sc+"_Parent_Percent := R."+Sc+"_Parent_Percent;\n";
+                				break;
+                			case 5:
+                				ecl += "maximum_layers_"+Sc+" := MAX(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";   
+                				transform += "SELF."+Sc+"_Parent_Percent := (100*(L.maximum_"+Sc+"/L.maximum_layers_"+Sc+"));\n";
+                				joinT += "SELF."+Sc+"_Parent_Percent := R."+Sc+"_Parent_Percent;\n";
+                				break;
+                			case 6:
+                				ecl += "minimum_layers_"+Sc+" := MIN(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";  
+                				transform += "SELF."+Sc+"_Parent_Percent := (100*(L.minimum_"+Sc+"/L.minimum_layers_"+Sc+"));\n";
+                				joinT += "SELF."+Sc+"_Parent_Percent := R."+Sc+"_Parent_Percent;\n";
+                				break;
+                			}
             			}
+            			ecl += "END;\n";
+            			if(layer!=""){
+            				ecl += "ParentTable"+cnt+" := TABLE("+getDatasetName()+",MyNewRecParent"+cnt+","+group+");\n";
+            				ecl += "withtotParent"+cnt+" := JOIN(MyTab"+cnt+",ParentTable"+cnt+","+join+");\n";
+            			}
+            			else{
+            				ecl += "ParentTable"+cnt+" := TABLE("+getDatasetName()+",MyNewRecParent"+cnt+","+getDatasetName()+"."+Sr+");\n";
+            				ecl += "withtotParent"+cnt+" := JOIN(MyTab"+cnt+",ParentTable"+cnt+",LEFT."+Sr+" = RIGHT."+Sr+");\n";            				
+            			}
+            			ecl += "MyRec"+cnt+" trans1"+cnt+"(withtotParent"+cnt+" L,INTEGER R) := TRANSFORM\n"+transform+"SELF := L;\nEND;\n";
+            			ecl += "ParentTab"+cnt+" := PROJECT(withtotParent"+cnt+",trans1"+cnt+"(LEFT,COUNTER));\n";            			
+            			
         			}
-        			ecl += "END;\n";
-        			if(layer!=""){
-        				ct++;
-	        			ecl += "ParentTable"+cnt+" := TABLE("+this.getDatasetName()+",MyNewRecParent"+cnt+","+group+");\n";        			
-	        			ecl += "withTotal"+cnt+" := JOIN(MyTab"+cnt+",ParentTable"+cnt+","+join+");\n";
-	        			ecl += "MyRec"+cnt+" Trans"+cnt+"(withTotal"+cnt+" L, INTEGER C) := TRANSFORM\n";
-	        			ecl += transform;
-	        			ecl += "SELF := L;\nEND;\n";
-	        			ecl += "PercentTable"+cnt+" := PROJECT(withTotal"+cnt+",trans"+cnt+"(LEFT,COUNTER));\n";
-	        			//ecl += "OUTPUT(PercentTable"+cnt+",NAMED('WithParentPercentage"+cnt+"'));\n";
-	        			if(persist.equalsIgnoreCase("true")){
-        	        		if(outputName != null && !(outputName.trim().equals(""))){
-        	        			ecl += "OUTPUT((PercentTable"+cnt+")"+",,'~eda::"+outputName+"::tabulate_parent', __compressed__, overwrite,NAMED('WithParentPercentage"+cnt+"'))"+";\n";
-        	        		}else{
-        	        			ecl += "OUTPUT((PercentTable"+cnt+")"+",,'~eda::"+defJobName+"::tabulate_parent', __compressed__, overwrite,NAMED('WithParentPercentage"+cnt+"'))"+";\n";
-        	        		}
-        	        	}
-        	        	else{
-        	        		ecl += "OUTPUT((PercentTable"+cnt+"),NAMED('WithParentPercentage"+cnt+"'));\n";
-        	        	}
-	        		}
-        			else{
-        				ct++;
-        				ecl += "ParentTable"+cnt+" := TABLE("+this.getDatasetName()+",MyNewRecParent"+cnt+","+Sr+");\n";        			
-	        			ecl += "withTotal"+cnt+" := JOIN(MyTab"+cnt+",ParentTable"+cnt+",LEFT."+Sr+"=RIGHT."+Sr+");\n";
-	        			ecl += "MyRec"+cnt+" Trans"+cnt+"(withTotal"+cnt+" L, INTEGER C) := TRANSFORM\n";
-	        			ecl += transform;
-	        			ecl += "SELF := L;\nEND;\n";
-	        			ecl += "PercentTable"+cnt+" := PROJECT(withTotal"+cnt+",trans"+cnt+"(LEFT,COUNTER));\n";
-	        			//ecl += "OUTPUT(PercentTable"+cnt+",NAMED('WithParentPercentage"+cnt+"'));\n";
-	        			if(persist.equalsIgnoreCase("true")){
-        	        		if(outputName != null && !(outputName.trim().equals(""))){
-        	        			ecl += "OUTPUT((PercentTable"+cnt+")"+",,'~eda::"+outputName+"::tabulate_parent', __compressed__, overwrite,NAMED('WithParentPercentage"+cnt+"'))"+";\n";
-        	        		}else{
-        	        			ecl += "OUTPUT((PercentTable"+cnt+")"+",,'~eda::"+defJobName+"::tabulate_parent', __compressed__, overwrite,NAMED('WithParentPercentage"+cnt+"'))"+";\n";
-        	        		}
-        	        	}
-        	        	else{
-        	        		ecl += "OUTPUT((PercentTable"+cnt+"),NAMED('WithParentPercentage"+cnt+"'));\n";
-        	        	}
+        			if(total){
+        				transform = "";
+            			ecl += "MyNewRecTotal"+cnt+" := RECORD\nUNSIGNED id := 1;\n";
+            			for(Iterator<Player> itC = cols.iterator(); itC.hasNext();){
+                			Player sc = (Player) itC.next();
+                			String Sc = sc.getFirstName();
+                			int op = sc.getOP();
+                			switch(op){
+                			case 0: 
+                				ecl += "cnt_layers_"+Sc+" := COUNT(GROUP);\n";
+                				transform += "SELF."+Sc+"_Total_Percent := (100*(L.cnt_"+Sc+"/L.cnt_layers_"+Sc+"));\n";
+                				break;
+                			case 1:
+                				ecl += "add_layers_"+Sc+" := SUM(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";    
+                				transform += "SELF."+Sc+"_Total_Percent := (100*(L.add_"+Sc+"/L.add_layers_"+Sc+"));\n";
+                				break;
+                			case 2:
+                				ecl += "Mean_layers_"+Sc+" := AVE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";   
+                				transform += "SELF."+Sc+"_Total_Percent := (100*(L.Mean_"+Sc+"/L.Mean_layers_"+Sc+"));\n";
+                				break;
+                			case 3:
+                				ecl += "Var_layers_"+Sc+" := VARIANCE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";  
+                				transform += "SELF."+Sc+"_Total_Percent := (100*(L.Var_"+Sc+"/L.Var_layers_"+Sc+"));\n";
+                				break;
+                			case 4:
+                				ecl += "Sd_layers_"+Sc+" := SQRT(VARIANCE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+"));\n";  
+                				transform += "SELF."+Sc+"_Total_Percent := (100*(L.Sd_"+Sc+"/L.Sd_layers_"+Sc+"));\n";
+                				break;
+                			case 5:
+                				ecl += "maximum_layers_"+Sc+" := MAX(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";   
+                				transform += "SELF."+Sc+"_Total_Percent := (100*(L.maximum_"+Sc+"/L.maximum_layers_"+Sc+"));\n";
+                				break;
+                			case 6:
+                				ecl += "minimum_layers_"+Sc+" := MIN(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";  
+                				transform += "SELF."+Sc+"_Total_Percent := (100*(L.minimum_"+Sc+"/L.minimum_layers_"+Sc+"));\n";         				
+                				break;
+                			}
+            			}
+            			ecl += "END;\n";
+            			
+            			ecl += "TotalTable"+cnt+" := TABLE("+getDatasetName()+",MyNewRecTotal"+cnt+");";
+            			ecl += "withtotTotal"+cnt+" := JOIN(MyTab"+cnt+",TotalTable"+cnt+",LEFT.id = RIGHT.id);\n";
+            			ecl += "MyRec"+cnt+" trans"+cnt+"(withtotTotal"+cnt+" L,INTEGER C) := TRANSFORM\n" +transform+        					
+            					"	SELF := L;\n" +
+            					"END;\n";
+            			ecl += "TotalTab"+cnt+" := PROJECT(withtotTotal"+cnt+",trans"+cnt+"(LEFT,COUNTER));\n";
         			}
         			
-        		}
-        		if(settings.contains("total")){
-        			transform = "";
-        			ct++;
-        			ecl += "MyNewRecGrand"+cnt+" := RECORD\nUNSIGNED id := 1;\n";
-        			for(Iterator<Player> itC = cols.iterator(); itC.hasNext();){
-            			Player sc = (Player) itC.next();
-            			String Sc = sc.getFirstName();
-            			int op = sc.getOP();
-            			switch(op){
-            			case 0: 
-            				ecl += "cnt_layers_"+Sc+" := COUNT(GROUP);\n";
-            				transform += "SELF."+Sc+"_Percent := (100*(L.cnt_"+Sc+"/L.cnt_layers_"+Sc+"));\n";
-            				break;
-            			case 1:
-            				ecl += "add_layers_"+Sc+" := SUM(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";    
-            				transform += "SELF."+Sc+"_Percent := (100*(L.add_"+Sc+"/L.add_layers_"+Sc+"));\n";
-            				break;
-            			case 2:
-            				ecl += "Mean_layers_"+Sc+" := AVE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";   
-            				transform += "SELF."+Sc+"_Percent := (100*(L.Mean_"+Sc+"/L.Mean_layers_"+Sc+"));\n";
-            				break;
-            			case 3:
-            				ecl += "Var_layers_"+Sc+" := VARIANCE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";  
-            				transform += "SELF."+Sc+"_Percent := (100*(L.Var_"+Sc+"/L.Var_layers_"+Sc+"));\n";
-            				break;
-            			case 4:
-            				ecl += "Sd_layers_"+Sc+" := SQRT(VARIANCE(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+"));\n";  
-            				transform += "SELF."+Sc+"_Percent := (100*(L.Sd_"+Sc+"/L.Sd_layers_"+Sc+"));\n";
-            				break;
-            			case 5:
-            				ecl += "maximum_layers_"+Sc+" := MAX(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";   
-            				transform += "SELF."+Sc+"_Percent := (100*(L.maximum_"+Sc+"/L.maximum_layers_"+Sc+"));\n";
-            				break;
-            			case 6:
-            				ecl += "minimum_layers_"+Sc+" := MIN(GROUP,(REAL)"+this.getDatasetName()+"."+Sc+");\n";  
-            				transform += "SELF."+Sc+"_Percent := (100*(L.minimum_"+Sc+"/L.minimum_layers_"+Sc+"));\n";         				
-            				break;
-            			}
+        			if(parent && total){
+        				ecl += "MyRec"+cnt+" Trans2"+cnt+"(TotalTab"+cnt+" L, ParentTab"+cnt+" R) := TRANSFORM\n" +joinT+
+        						"	SELF := L;\n" +
+        						"END;\n";
+        				if(layer != ""){
+        					ecl += Sr+"_"+number+" := JOIN(TotalTab"+cnt+",ParentTab"+cnt+","+join+" AND LEFT."+Sr+" = RIGHT."+Sr+",Trans2"+cnt+"(LEFT,RIGHT));\n";
+        				}
+        				else{
+        					ecl += Sr+"_"+number+" := JOIN(TotalTab"+cnt+",ParentTab"+cnt+",LEFT."+Sr+" = RIGHT."+Sr+",Trans2"+cnt+"(LEFT,RIGHT));\n";
+        				}
+        					
         			}
-        			ecl += "END;\n";
-        			ecl += "GrandTable"+cnt+" := TABLE("+this.getDatasetName()+",MyNewRecGrand"+cnt+");\n";        			
-        			ecl += "withGrandTotal"+cnt+" := JOIN(MyTab"+cnt+",GrandTable"+cnt+",LEFT.id=RIGHT.id);\n";
-        			ecl += "MyRec"+cnt+" TransTotal"+cnt+"(withGrandTotal"+cnt+" L, INTEGER C) := TRANSFORM\n";
-        			ecl += transform;
-        			ecl += "SELF := L;\nEND;\n";
-        			ecl += "PercentGrandTable"+cnt+" := PROJECT(withGrandTotal"+cnt+",transTotal"+cnt+"(LEFT,COUNTER));\n";
-        			//ecl += "OUTPUT(PercentGrandTable"+cnt+",NAMED('WithGrandTotalPercentage"+cnt+"'));\n";
+        			if(parent && !total){
+        				ecl += Sr+"_"+number+" := ParentTab"+cnt+";\n";
+        			}
+        			if(total && !parent){
+        				ecl += Sr+"_"+number+" := TotalTab"+cnt+";\n";
+        			}
         			if(persist.equalsIgnoreCase("true")){
-    	        		if(outputName != null && !(outputName.trim().equals(""))){
-    	        			ecl += "OUTPUT((PercentGrandTable"+cnt+")"+",,'~eda::"+outputName+"::tabulate_grand', __compressed__, overwrite,NAMED('WithGrandTotalPercentage"+cnt+"'))"+";\n";
-    	        		}else{
-    	        			ecl += "OUTPUT((PercentGrandTable"+cnt+")"+",,'~eda::"+defJobName+"::tabulate_grand', __compressed__, overwrite,NAMED('WithGrandTotalPercentage"+cnt+"'))"+";\n";
-    	        		}
+    	        		if(outputName != null && !(outputName.trim().equals("")))    	        			
+    	        			ecl += "OUTPUT(("+Sr+"_"+number+")"+",,'~eda::"+outputName+"::tabulate', __compressed__, overwrite,NAMED('"+Sr+"_crossTab'))"+";\n";
+    	        		else    	        		
+    	        			ecl += "OUTPUT(("+Sr+"_"+number+")"+",,'~eda::"+defJobName+"::tabulate', __compressed__, overwrite,NAMED('"+Sr+"_crossTab'))"+";\n";    	        		
     	        	}
-    	        	else{
-    	        		ecl += "OUTPUT((PercentGrandTable"+cnt+"),NAMED('WithGrandTotalPercentage"+cnt+"'));\n";
-    	        	}
-        		}        		       		
+    	        	else    	        		
+    	        		ecl += "OUTPUT(("+Sr+"_"+number+"),NAMED('"+Sr+"_crossTab'));\n";
+    	        	
+        		}
         		if(!settings.contains("parent") && !settings.contains("total")){
         			ct++;
         			//ecl += "OUTPUT(MyTab"+cnt+",NAMED('"+Sr+"_crossTab'));\n";
         			if(persist.equalsIgnoreCase("true")){
     	        		if(outputName != null && !(outputName.trim().equals(""))){
-    	        			ecl += "OUTPUT((MyTab"+cnt+")"+",,'~eda::"+outputName+"::tabulate', __compressed__, overwrite,NAMED('"+Sr+"_crossTab'))"+";\n";
+    	        			ecl += Sr+"_"+number+" := MyTab"+cnt+";\n";
+    	        			ecl += "OUTPUT(("+Sr+"_"+number+")"+",,'~eda::"+outputName+"::tabulate', __compressed__, overwrite,NAMED('"+Sr+"_crossTab'))"+";\n";
     	        		}else{
-    	        			ecl += "OUTPUT((MyTab"+cnt+")"+",,'~eda::"+defJobName+"::tabulate', __compressed__, overwrite,NAMED('"+Sr+"_crossTab'))"+";\n";
+    	        			ecl += Sr+"_"+number+" := MyTab"+cnt+";\n";
+    	        			ecl += "OUTPUT(("+Sr+"_"+number+")"+",,'~eda::"+defJobName+"::tabulate', __compressed__, overwrite,NAMED('"+Sr+"_crossTab'))"+";\n";
     	        		}
     	        	}
     	        	else{
-    	        		ecl += "OUTPUT((MyTab"+cnt+"),NAMED('"+Sr+"_crossTab'));\n";
+    	        		ecl += Sr+"_"+number+" := MyTab"+cnt+";\n";
+    	        		ecl += "OUTPUT(("+Sr+"_"+number+"),NAMED('"+Sr+"_crossTab'));\n";
     	        	}
         		}
         		cnt = cnt + 1;
@@ -406,7 +444,7 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
         	}
         }
     }
- 
+    
     public String savePeople(){
     	String out = "";
     	
@@ -533,6 +571,15 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
                 setDatasetName(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "dataset_name")));
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "settings")) != null)
                 openSettings(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "settings")));
+            
+            if(getTables() != null){
+            	String[] tabs = new String[getTables().length];
+	            for(int i = 0; i<getTables().length; i++){
+	            	if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "table"+i)) != null)
+	            		tabs[i] = XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "table"+i));
+	            }
+	            setTables(tabs);
+            }
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "people")) != null)
                 openPeople(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "people")));
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "rows")) != null)
@@ -549,6 +596,8 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
                 setPersistOutputChecked(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "persist_Output_Checked")));
             if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "defJobName")) != null)
                 setDefJobName(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "defJobName")));
+            if(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "Number")) != null)
+                setNumber(XMLHandler.getNodeValue(XMLHandler.getSubNode(node, "Number")));
             
         } catch (Exception e) {
             throw new KettleXMLException("ECL Dataset Job Plugin Unable to read step info from XML node", e);
@@ -562,6 +611,11 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
         retval += super.getXML();
         retval += "		<dataset_name ><![CDATA[" + DatasetName + "]]></dataset_name>" + Const.CR;
         retval += "		<settings><![CDATA[" + this.saveSettings() + "]]></settings>" + Const.CR;
+        if(getTables() != null){
+	        for(int i = 0; i<getTables().length; i++){
+	        	retval += "		<table"+i+" eclIsDef = \"true\" eclType = \"recordset\"><![CDATA[" + getTables()[i] + "]]></table"+i+">" + Const.CR;
+	        }
+        }
         retval += "		<people><![CDATA[" + this.savePeople() + "]]></people>" + Const.CR;
         retval += "		<rows><![CDATA[" + this.saveRows() + "]]></rows>" + Const.CR;
         retval += "		<cols><![CDATA[" + this.saveCols() + "]]></cols>" + Const.CR;
@@ -570,6 +624,7 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
         retval += "		<output_name><![CDATA[" + outputName + "]]></output_name>" + Const.CR;
         retval += "		<persist_Output_Checked><![CDATA[" + persist + "]]></persist_Output_Checked>" + Const.CR;
         retval += "		<defJobName><![CDATA[" + defJobName + "]]></defJobName>" + Const.CR;
+        retval += "		<Number><![CDATA[" + number + "]]></Number>" + Const.CR;
         return retval;
 
     }
@@ -582,6 +637,15 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
                 DatasetName = rep.getStepAttributeString(id_jobentry, "datasetName"); //$NON-NLS-1$
         	if(rep.getStepAttributeString(id_jobentry, "settings") != null)
                 this.openSettings(rep.getStepAttributeString(id_jobentry, "settings")); //$NON-NLS-1$
+        	if(getTables() != null){
+        		String[] tables = new String[getTables().length];
+        		for(int i = 0; i<getTables().length; i++){
+        			if(rep.getStepAttributeString(id_jobentry, "table"+i) != null)
+        				tables[i] = (rep.getStepAttributeString(id_jobentry, "table"+i)); //$NON-NLS-1$
+        		}
+        		setTables(tables);
+        	}
+        	
             
             if(rep.getStepAttributeString(id_jobentry, "people") != null)
                 this.openPeople(rep.getStepAttributeString(id_jobentry, "people")); //$NON-NLS-1$
@@ -599,6 +663,8 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
             	persist = rep.getStepAttributeString(id_jobentry, "persist_Output_Checked"); //$NON-NLS-1$
             if(rep.getStepAttributeString(id_jobentry, "defJobName") != null)
             	defJobName = rep.getStepAttributeString(id_jobentry, "defJobName"); //$NON-NLS-1$
+            if(rep.getStepAttributeString(id_jobentry, "Number") != null)
+            	number = rep.getStepAttributeString(id_jobentry, "Number"); //$NON-NLS-1$
             
         } catch (Exception e) {
             throw new KettleException("Unexpected Exception", e);
@@ -609,7 +675,12 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
         try {
         	rep.saveStepAttribute(id_job, getObjectId(), "datasetName", DatasetName); //$NON-NLS-1$
         	rep.saveStepAttribute(id_job, getObjectId(), "settings", this.saveSettings()); //$NON-NLS-1$
-            rep.saveStepAttribute(id_job, getObjectId(), "people", this.savePeople()); //$NON-NLS-1$
+        	
+        	if(getTables() != null){
+        		for(int i = 0; i<getTables().length; i++)
+        			rep.saveStepAttribute(id_job, getObjectId(), "table"+i, getTables()[i]); //$NON-NLS-1$
+        	}
+        	rep.saveStepAttribute(id_job, getObjectId(), "people", this.savePeople()); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "rows", this.saveRows()); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "cols", this.saveCols()); //$NON-NLS-1$
             rep.saveStepAttribute(id_job, getObjectId(), "layers", this.saveLayers()); //$NON-NLS-1$
@@ -617,6 +688,7 @@ public class ECLTabulate extends ECLJobEntry{//extends JobEntryBase implements C
         	rep.saveStepAttribute(id_job, getObjectId(), "label", label);
         	rep.saveStepAttribute(id_job, getObjectId(), "persist_Output_Checked", persist);
         	rep.saveStepAttribute(id_job, getObjectId(), "defJobName", defJobName);
+        	rep.saveStepAttribute(id_job, getObjectId(), "Number", number);
             
         } catch (Exception e) {
             throw new KettleException("Unable to save info into repository" + id_job, e);

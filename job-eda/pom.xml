@@ -63,6 +63,7 @@
 				<artifactId>jface</artifactId>
 				<version>3.3.0-I20070606-0010</version>
 			</dependency>
+			
 			<dependency>
 				<groupId>org.hpccsystems</groupId>
 				<artifactId>javaecl</artifactId>
