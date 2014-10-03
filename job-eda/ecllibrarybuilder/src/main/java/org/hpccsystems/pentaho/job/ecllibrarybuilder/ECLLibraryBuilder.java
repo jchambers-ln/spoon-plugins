@@ -347,10 +347,13 @@ public class ECLLibraryBuilder extends ECLJobEntry{//extends JobEntryBase implem
     	for(Iterator<String> it = replace.iterator(); it.hasNext();){
     		String S = (String) it.next();
     		int idx = Entries.indexOf(S);
-    		if(idx<libValues.length){
+    		//System.out.println(Entries.indexOf(S));
+    		System.out.println(S);
+    		System.out.println("---- idx:" + idx + " | " + libValues.length);
+    		if(idx<libValues.length && idx != -1){
     			line = line.replace(S, libValues[idx]);
     		}
-    		else if(idx >= libValues.length && idx < libValues.length+libCombos.length){
+    		else if(idx >= libValues.length && idx < libValues.length+libCombos.length  && idx != -1){
     			line = line.replace(S, libCombos[idx-libValues.length]);
     		}
     		else{

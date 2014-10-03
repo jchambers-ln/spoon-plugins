@@ -35,8 +35,8 @@
 			<zipfileset dir="${basedir}/perspectives/eclconfig/target" includes="eclconfig.jar" prefix="spoon/eclconfig" />
 			<zipfileset dir="${basedir}/perspectives/eclconfig/src/main/resources/plugin" includes="plugin.xml" prefix="spoon/eclconfig" />
 			
-			<zipfileset dir="${basedir}/perspectives/eclmyperspective/target" includes="eclmyperspective.jar" prefix="spoon/eclmyperspevtive" />
-			<zipfileset dir="${basedir}/perspectives/eclmyperspevtive/src/main/resources/plugin" includes="plugin.xml" prefix="spoon/eclmyperspevtive" />
+			<zipfileset dir="${basedir}/perspectives/eclmyperspective/target" includes="eclmyperspective.jar" prefix="spoon/eclmyperspective" />
+			<zipfileset dir="${basedir}/perspectives/eclmyperspective/src/main/resources/plugin" includes="plugin.xml" prefix="spoon/eclmyperspective" />
 			<zipfileset dir="${basedir}/perspectives/ecllibrary/target" includes="ecllibrary.jar" prefix="spoon/ecllibrary" />
 			<zipfileset dir="${basedir}/perspectives/ecllibrary/src/main/resources/plugin" includes="plugin.xml" prefix="spoon/ecllibrary" />
 			
